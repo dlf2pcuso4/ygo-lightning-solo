@@ -1,6 +1,6 @@
 //manages the screen rendering loop and events
 (async () => {
-  await addScript("screen.class.js");
+  await addScript("v1/screen.class.js");
   const screen = new Screen("1280", "720");
   document.getElementById("ygol-mainDiv").appendChild(screen.canvas);
   screen.canvas.oncontextmenu = () => false;

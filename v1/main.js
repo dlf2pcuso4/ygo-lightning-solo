@@ -14,7 +14,7 @@ async function main() {
       justify-content: center;
       align-items: center;
     }`);
-    await addScript("renderer.js");
+    await addScript("v1/renderer.js");
   } else {
     //embeded div
     await addCss(`
