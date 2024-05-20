@@ -26,7 +26,7 @@ async function main() {
       "beforeend",
       "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
     );
-    await addScript("renderer.js");
+    await addScript("v1/renderer.js");
     allowAutoLoadDeck = true;
   }
 }

@@ -4,7 +4,7 @@
   const screen = new Screen("1280", "720");
   document.getElementById("ygol-mainDiv").appendChild(screen.canvas);
   screen.canvas.oncontextmenu = () => false;
-  await screen.addObjectImg("field", "field.jpg", 0, 0, 1280, 720, {
+  await screen.addObjectImg("field", "v1/field.jpg", 0, 0, 1280, 720, {
     isDraggable: false,
   });
   for (let i = 0; i < 5; i++) {
