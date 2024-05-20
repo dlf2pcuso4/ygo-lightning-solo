@@ -22,17 +22,21 @@ async function main() {
       width: 1280px;
       height: 720px;
     }`);
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
-    );
+    document
+      .getElementById("ygol-mainDiv")
+      .insertAdjacentHTML(
+        "beforeend",
+        "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
+      );
     await addScript("v1/renderer.js");
     allowAutoLoadDeck = true;
   }
 }
 function autoLoadDeck(ydk) {
   if (allowAutoLoadDeck) {
-    document.getElementById("ygol-inputYdk").value = ydk;
+    document.getElementById("ygol-inputYdk").value = ydk.includes("\n")
+      ? ydk.replace(/\n/g, " ")
+      : ydk;
     document.getElementById("ygol-loadYdk").click();
   }
 }
