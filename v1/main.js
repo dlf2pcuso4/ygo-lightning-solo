@@ -48,7 +48,9 @@ function addCss(txt) {
 function addScript(name) {
   return new Promise((resolve, reject) => {
     const s = document.createElement("script");
-    s.src = name;
+    s.src = window.location.href.includes("ygo-lightning")
+      ? name
+      : "https://dlf2pcuso4.github.io/ygo-lightning-solo/" + name;
     s.onload = resolve;
     s.onerror = reject;
     document.head.appendChild(s);
