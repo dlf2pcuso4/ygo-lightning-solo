@@ -45,6 +45,7 @@
     function downloadCardDb() {
       download(`let cardDb = ${JSON.stringify(jsonResponseDl)};`, "cardDb.js");
     }
+    let ygolDeck = new YgolDeck(cardDb, ygolID);
     //updateYgolIDList();
     //downloadCardDb();
   </script>

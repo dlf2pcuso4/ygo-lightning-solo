@@ -152,7 +152,8 @@ class YgolDeck {
     return "yld://" + this.base64Encode(this.base13Decode(d));
   }
   dlf2pV2_to_namelist(dlf2pV2) {
-    let arr = this.base13Encode(this.base63Decode(dlf2pV2.split("_")[0]));
+    let split = decodeURIComponent(dlf2pV2).split("_");
+    let arr = this.base13Encode(this.base63Decode(split[0]));
     if (arr[0] != "a") arr = "0" + arr;
     arr = arr
       .replace(/a/g, "00")
@@ -169,6 +170,14 @@ class YgolDeck {
     }
     let main = d.filter((a) => !this.isEDMonster(a));
     let extra = d.filter((a) => this.isEDMonster(a));
+    if (split[3])
+      for (let el of split[3].split("-")) {
+        if (this.isEDMonster(el)) {
+          extra.push(el);
+        } else {
+          main.push(el);
+        }
+      }
     return `#main\n${main.join("\n")}\n#extra\n${extra.join("\n")}`;
   }
   base64Encode(str) {
