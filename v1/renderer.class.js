@@ -161,12 +161,12 @@ class Renderer {
     this.ydk = ydk;
     let maindeck = ydk
       .split("#extra")[0]
-      .split(" ")
+      .split("\n")
       .filter((a) => !a.includes("#") && !a.includes("!") && a.length > 1);
     let extradeck = ydk
       .split("#extra")[1]
       .split("!side")[0]
-      .split(" ")
+      .split("\n")
       .filter((a) => !a.includes("#") && !a.includes("!") && a.length > 1);
     this.loadDeck(maindeck, extradeck);
   }
