@@ -32,7 +32,8 @@ async function main() {
         "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
       );
   }
-  const renderer = new Renderer(1280, 720, 60, 30, cardDb, ygolID);
+  let isRush = document.querySelector("ygol").getAttribute("rush");
+  const renderer = new Renderer(1280, 720, 60, 30, cardDb, ygolID, isRush);
   document.querySelector("ygol").appendChild(renderer.screen.canvas);
   renderer.screen.canvas.oncontextmenu = () => false;
   document.getElementById("ygol-resetField").onclick = () =>

@@ -1,6 +1,6 @@
 //requires v1/screen.class.js
 class Renderer {
-  constructor(width, height, fps, snapTolerance, cardDb, ygolID) {
+  constructor(width, height, fps, snapTolerance, cardDb, ygolID, isRush) {
     this.screen = new Screen(width, height);
     this.fps = fps;
     this.snapTolerance = snapTolerance;
@@ -11,7 +11,7 @@ class Renderer {
     this.scrollY = 0;
     this.originalObjectList;
     this.shuffling = false;
-    this.ygolDeck = new YgolDeck(cardDb, ygolID);
+    this.ygolDeck = new YgolDeck(cardDb, ygolID, isRush);
     this.yld = "";
     this.ydk = "";
   }
