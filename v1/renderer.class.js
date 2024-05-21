@@ -1,6 +1,6 @@
 //requires v1/screen.class.js
 class Renderer {
-  constructor(width, height, fps, snapTolerance) {
+  constructor(width, height, fps, snapTolerance, cardDb, ygolID) {
     this.screen = new Screen(width, height);
     this.fps = fps;
     this.snapTolerance = snapTolerance;
@@ -11,6 +11,8 @@ class Renderer {
     this.scrollY = 0;
     this.originalObjectList;
     this.shuffling = false;
+    this.ygolDeck = new YgolDeck(cardDb, ygolID);
+    this.yld = "";
     this.ydk = "";
   }
   async loadField() {
@@ -157,6 +159,12 @@ class Renderer {
     this.originalObjectList = structuredClone(this.screen.objectList);
     this.preloadImages();
   }
+  loadYld(yld) {
+    this.yld = yld;
+    this.loadYdk(
+      this.ygolDeck.namelist_to_ydk(this.ygolDeck.yld_to_namelist(yld))
+    );
+  }
   loadYdk(ydk) {
     this.ydk = ydk;
     let maindeck = ydk
@@ -169,6 +177,11 @@ class Renderer {
       .split("\n")
       .filter((a) => !a.includes("#") && !a.includes("!") && a.length > 1);
     this.loadDeck(maindeck, extradeck);
+  }
+  loadDlf2pV2(dlf2pV2) {
+    this.loadYdk(
+      this.ygolDeck.namelist_to_ydk(this.ygolDeck.dlf2pV2_to_namelist(dlf2pV2))
+    );
   }
   deleteDeck() {
     for (let el of this.screen.objectList) {

@@ -1,4 +1,7 @@
 async function main() {
+  await addScript("v1/cardDb.js");
+  await addScript("v1/ygolID.js");
+  await addScript("v1/ygolDeck.class.js");
   await addScript("v1/screen.class.js");
   await addScript("v1/renderer.class.js");
   if (!document.querySelector("ygol")) {
@@ -29,7 +32,7 @@ async function main() {
         "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
       );
   }
-  const renderer = new Renderer(1280, 720, 60, 30);
+  const renderer = new Renderer(1280, 720, 60, 30, cardDb, ygolID);
   document.querySelector("ygol").appendChild(renderer.screen.canvas);
   renderer.screen.canvas.oncontextmenu = () => false;
   document.getElementById("ygol-resetField").onclick = () =>
@@ -37,8 +40,15 @@ async function main() {
   document.getElementById("ygol-loadYdk").onclick = async () =>
     renderer.loadYdk(document.getElementById("ygol-inputYdk").value);
   await renderer.loadField();
-  if (document.querySelector("ygol").getAttribute("ydk"))
+  if (document.querySelector("ygol").getAttribute("yld")) {
+    renderer.loadYld(document.querySelector("ygol").getAttribute("yld"));
+  } else if (document.querySelector("ygol").getAttribute("ydk")) {
     renderer.loadYdk(document.querySelector("ygol").getAttribute("ydk"));
+  } else if (document.querySelector("ygol").getAttribute("dlf2pV2")) {
+    renderer.loadDlf2pV2(
+      document.querySelector("ygol").getAttribute("dlf2pV2")
+    );
+  }
 }
 function addCss(txt) {
   return new Promise((resolve, reject) => {

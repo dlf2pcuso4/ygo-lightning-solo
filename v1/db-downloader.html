@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>YGOL DB Downloader</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body></body>
+  <script src="https://dlf2p.com/lib/carddb-dl.js"></script>
+  <script src="cardDb.js"></script>
+  <script src="ygolID.js"></script>
+  <script src="ygolDeck.class.js"></script>
+  <script>
+    function download(txt, name) {
+      let element = document.createElement("a");
+      element.setAttribute(
+        "href",
+        "data:text/plain;charset=utf-8," + encodeURIComponent(txt)
+      );
+      element.setAttribute("download", name);
+      element.style.display = "none";
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    }
+    function createYgolIDList() {
+      let json = [];
+      for (let el of jsonResponseDl) {
+        if (json.indexOf(el.name) == -1) json.push(el.name);
+      }
+      download(`let ygolID = ${JSON.stringify(json)};`, "ygolID.js");
+    }
+    function updateYgolIDList() {
+      let json = structuredClone(ygolID);
+      for (let el of jsonResponseDl) {
+        if (json.indexOf(el.name) == -1) json.push(el.name);
+      }
+      download(`let ygolID = ${JSON.stringify(json)};`, "ygolID.js");
+    }
+    function downloadCardDb() {
+      download(`let cardDb = ${JSON.stringify(jsonResponseDl)};`, "cardDb.js");
+    }
+    //updateYgolIDList();
+    //downloadCardDb();
+  </script>
+</html>
