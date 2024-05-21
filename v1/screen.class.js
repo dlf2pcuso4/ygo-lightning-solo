@@ -50,6 +50,7 @@ class Screen {
   }
   removeObject(id) {
     this.objectList = this.objectList.filter((a) => a.id != id);
+    if (document.getElementById(id)) document.getElementById(id).remove();
   }
   drawRotatedImg(ctx, angle, id, x, y, width, height) {
     ctx.save();

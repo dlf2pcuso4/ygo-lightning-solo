@@ -1,10 +1,11 @@
-let allowAutoLoadDeck = false;
 async function main() {
-  if (!document.getElementById("ygol-mainDiv")) {
+  await addScript("v1/screen.class.js");
+  await addScript("v1/renderer.class.js");
+  if (!document.querySelector("ygol")) {
     //full page
     document.body.insertAdjacentHTML(
       "beforeend",
-      "<div id='ygol-mainDiv' style='width:min-content'><input id='ygol-inputYdk' type='text'><button id='ygol-loadYdk' style='margin:0 10px 10px 10px'>Load YDK</button><button id='ygol-resetField'>Reset Field</button></div>"
+      "<ygol style='width:min-content'><input id='ygol-inputYdk' type='text'><button id='ygol-loadYdk' style='margin:0 10px 10px 10px'>Load YDK</button><button id='ygol-resetField'>Reset Field</button></ygol>"
     );
     await addCss(`
     body {
@@ -14,31 +15,30 @@ async function main() {
       justify-content: center;
       align-items: center;
     }`);
-    await addScript("v1/renderer.js");
   } else {
     //embeded div
     await addCss(`
-    .ygol-mainDiv {
+    ygol {
       width: 1280px;
       height: 720px;
     }`);
     document
-      .getElementById("ygol-mainDiv")
+      .querySelector("ygol")
       .insertAdjacentHTML(
         "beforeend",
         "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
       );
-    await addScript("v1/renderer.js");
-    allowAutoLoadDeck = true;
   }
-}
-function autoLoadDeck(ydk) {
-  if (allowAutoLoadDeck) {
-    document.getElementById("ygol-inputYdk").value = ydk.includes("\n")
-      ? ydk.replace(/\n/g, " ")
-      : ydk;
-    document.getElementById("ygol-loadYdk").click();
-  }
+  const renderer = new Renderer(1280, 720, 60, 30);
+  document.querySelector("ygol").appendChild(renderer.screen.canvas);
+  renderer.screen.canvas.oncontextmenu = () => false;
+  document.getElementById("ygol-resetField").onclick = () =>
+    renderer.resetField();
+  document.getElementById("ygol-loadYdk").onclick = async () =>
+    renderer.loadYdk(document.getElementById("ygol-inputYdk").value);
+  await renderer.loadField();
+  if (document.querySelector("ygol").getAttribute("ydk"))
+    renderer.loadYdk(document.querySelector("ygol").getAttribute("ydk"));
 }
 function addCss(txt) {
   return new Promise((resolve, reject) => {
