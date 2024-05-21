@@ -112,7 +112,7 @@ class YgolDeck {
   namelist_to_ydk(namelist) {
     let arr = namelist.split("\n");
     for (let i = 0; i < arr.length; i++) {
-      let card = this.db.filter((a) => a.name == arr[i]);
+      let card = this.db.filter((a) => a.name == arr[i] && !a.rush);
       if (card.length) arr[i] = card[0].konamiID || arr[i];
     }
     return arr.join("\n");
