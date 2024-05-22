@@ -29,7 +29,7 @@ class Renderer {
     this.ydk = "";
     this.noimage = "https://dlf2p.com/images/noimage.jpg";
     //debug
-    this.showHitboxes = true;
+    this.showHitboxes = false;
     this.allowIllegalPlacement = false;
   }
   async loadField() {
@@ -223,6 +223,40 @@ class Renderer {
       this.changeSleeve(
         document.querySelector("ygol").getAttribute("sleevesrc")
       );
+    const observer = new MutationObserver(this.mutationUpdate.bind(this));
+    observer.observe(document.querySelector("ygol"), {
+      attributes: true,
+    });
+  }
+  //update when attributes of <ygol> are changed
+  mutationUpdate(mutations) {
+    for (let mutation of mutations) {
+      if (mutation.type === "attributes") {
+        switch (mutation.attributeName) {
+          case "matsrc":
+            this.changeMat(
+              document.querySelector("ygol").getAttribute("matsrc")
+            );
+            break;
+          case "sleevesrc":
+            this.changeSleeve(
+              document.querySelector("ygol").getAttribute("sleevesrc")
+            );
+            break;
+          default:
+            if (document.querySelector("ygol").getAttribute("yld")) {
+              this.loadYld(document.querySelector("ygol").getAttribute("yld"));
+            } else if (document.querySelector("ygol").getAttribute("ydk")) {
+              this.loadYdk(document.querySelector("ygol").getAttribute("ydk"));
+            } else if (document.querySelector("ygol").getAttribute("dlf2pV2")) {
+              this.loadDlf2pV2(
+                document.querySelector("ygol").getAttribute("dlf2pV2")
+              );
+            }
+        }
+        break;
+      }
+    }
   }
   //load deck from an array of konamiid/names
   async loadDeck(maindeck, extradeck) {
@@ -685,11 +719,18 @@ class Renderer {
     }
   }
   changeMat(src) {
-    document.querySelector("ygol").setAttribute("matsrc", src);
+    if (document.querySelector("ygol").getAttribute("matsrc") != src)
+      document.querySelector("ygol").setAttribute("matsrc", src);
     document.getElementById("fieldbg").src = src;
   }
   changeSleeve(src) {
-    document.querySelector("ygol").setAttribute("sleevesrc", src);
+    if (document.querySelector("ygol").getAttribute("sleevesrc") != src)
+      document.querySelector("ygol").setAttribute("sleevesrc", src);
+    for (let el of document
+      .getElementById("ygol-cnv-images")
+      .querySelectorAll("img")) {
+      if (el.src == this.noimage) el.src = src;
+    }
     this.noimage = src;
   }
 }

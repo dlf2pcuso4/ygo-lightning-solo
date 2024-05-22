@@ -8,7 +8,7 @@ async function main() {
     //full page
     document.body.insertAdjacentHTML(
       "beforeend",
-      "<ygol style='width:min-content'><input id='ygol-inputYdk' type='text'><button id='ygol-loadYdk' style='margin:0 10px 10px 10px'>Load YDK</button><button id='ygol-resetField'>Reset Field</button></ygol>"
+      "<ygol style='width:min-content'></ygol>"
     );
     await addCss(`
     body {
@@ -25,21 +25,11 @@ async function main() {
       width: 1280px;
       height: 720px;
     }`);
-    document
-      .querySelector("ygol")
-      .insertAdjacentHTML(
-        "beforeend",
-        "<input id='ygol-inputYdk' type='text' style='display:none'><button id='ygol-loadYdk' style='display:none'>Load YDK</button><button id='ygol-resetField' style='display:none'>Reset Field</button>"
-      );
   }
   let isRush = document.querySelector("ygol").getAttribute("rush");
   const renderer = new Renderer(1280, 720, 60, 30, 0.5, cardDb, ygolID, isRush);
   document.querySelector("ygol").appendChild(renderer.screen.canvas);
   renderer.screen.canvas.oncontextmenu = () => false;
-  document.getElementById("ygol-resetField").onclick = () =>
-    renderer.resetField();
-  document.getElementById("ygol-loadYdk").onclick = async () =>
-    renderer.loadYdk(document.getElementById("ygol-inputYdk").value);
   await renderer.loadField();
   if (document.querySelector("ygol").getAttribute("yld")) {
     renderer.loadYld(document.querySelector("ygol").getAttribute("yld"));
