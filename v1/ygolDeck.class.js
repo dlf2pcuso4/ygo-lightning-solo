@@ -4,6 +4,18 @@ class YgolDeck {
     this.ygolID = ygolID;
     this.isRush = isRush;
   }
+  convert(d, format) {
+    switch (format) {
+      case "yld":
+        return this.namelist_to_yld(this.toNamelist(d));
+      case "ydk":
+        return this.namelist_to_ydk(this.toNamelist(d));
+      case "ydke":
+        return this.ydk_to_ydke(this.namelist_to_ydk(this.toNamelist(d)));
+      case "dlf2pV2":
+        return this.namelist_to_dlf2pV2(this.toNamelist(d));
+    }
+  }
   toNamelist(d) {
     if (d.includes("#main") || d.includes("#extra")) {
       return this.ydk_to_namelist(d);
@@ -102,7 +114,15 @@ class YgolDeck {
       .join("\n");
   }
   ydk_to_namelist(ydk) {
-    let arr = ydk.split("\n");
+    let arr = ydk
+      .split("\n")
+      .filter(
+        (a) =>
+          !isNaN(a) ||
+          a.includes("#main") ||
+          a.includes("#extra") ||
+          a.includes("!side")
+      );
     for (let i = 0; i < arr.length; i++) {
       if (!isNaN(arr[i])) {
         arr[i] = this.db.filter((a) => a.konamiID == arr[i])[0].name;
@@ -183,6 +203,27 @@ class YgolDeck {
       }
     return `#main\n${main.join("\n")}\n#extra\n${extra.join("\n")}`;
   }
+  namelist_to_dlf2pV2(namelist) {
+    let darr = [];
+    let special = [];
+    let prev = "";
+    for (let el of namelist.split("\n")) {
+      if (el.includes("!side")) break;
+      if (!el.includes("#main") && !el.includes("#extra")) {
+        let card = this.db.filter((a) => a.name == el)[0];
+        if (card.konamiID) {
+          let id = ("000000000" + card.konamiID).slice(-10);
+          darr.push(id == prev ? "b" : id);
+          prev = id;
+        } else {
+          special.push(el);
+        }
+      }
+    }
+    return `${this.base63Encode(
+      this.base13Decode(darr.join("").replace(/bb/g, "c").replace(/00/g, "a"))
+    )}_-1_Deck${special.length ? `_${special.join("-")}` : ""}`;
+  }
   base64Encode(str) {
     if (str == "-1") return "-1";
     let input = BigInt(str);
@@ -224,6 +265,18 @@ class YgolDeck {
     for (let i = str.length - 1; i >= 0; i--) {
       result +=
         BigInt(chars.indexOf(str[i])) * 13n ** BigInt(str.length - 1 - i);
+    }
+    return result;
+  }
+  base63Encode(str) {
+    if (str == "-1") return "-1";
+    let input = BigInt(str);
+    let chars =
+      "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-";
+    let result = "";
+    while (input > 0n) {
+      result = chars[input - (input / 63n) * 63n] + result;
+      input = BigInt(input / 63n);
     }
     return result;
   }

@@ -1,12 +1,23 @@
 //requires v1/screen.class.js
 class Renderer {
-  constructor(width, height, fps, snapTolerance, cardDb, ygolID, isRush) {
+  constructor(
+    width,
+    height,
+    fps,
+    snapTolerance,
+    mouseHoldDelay,
+    cardDb,
+    ygolID,
+    isRush
+  ) {
     this.screen = new Screen(width, height);
     this.fps = fps;
     this.snapTolerance = snapTolerance;
+    this.mouseHoldDelay = mouseHoldDelay;
     this.mousedownPos = { x: 0, y: 0 };
     this.mouseupPos = { x: 0, y: 0 };
     this.isMouseDown = false;
+    this.mouseHoldingDown = "false";
     this.movingObject = "";
     this.scrollY = 0;
     this.originalObjectList;
@@ -14,6 +25,7 @@ class Renderer {
     this.ygolDeck = new YgolDeck(cardDb, ygolID, isRush);
     this.yld = "";
     this.ydk = "";
+    this.noimage = "https://dlf2p.com/images/noimage.jpg";
   }
   async loadField() {
     await this.screen.addObjectImg(
@@ -104,7 +116,50 @@ class Renderer {
         isDraggable: false,
       }
     );
-    setInterval(() => {
+    setInterval(async () => {
+      //show card info when holding down mouse
+      if (this.mouseHoldingDown == "true") {
+        if (
+          !this.screen.objectList.filter((a) => a.id == "popup-card").length
+        ) {
+          this.screen.addObjectRect(
+            "popup-bg",
+            "#000000cc",
+            0,
+            0,
+            1280,
+            720,
+            {}
+          );
+          let id = this.screen
+            .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
+            .filter((a) => a.meta.cardid)
+            .at(-1).meta.cardid;
+          let card = this.ygolDeck.db.filter(
+            (a) => a.konamiID == id || a.name == id
+          )[0];
+          await this.screen.addObjectImg(
+            "popup-card",
+            `https://dlf2p.com/images/cards/${id}.jpg`,
+            0,
+            0,
+            360,
+            525,
+            {
+              isDraggable: false,
+            }
+          );
+          this.screen.addObjectText("popup-txt", "#ffffff", 400, 30, 800, {
+            text: card.description,
+            fontSize: "20pt",
+            fontFamily: "Bahnschrift light",
+          });
+        }
+      } else {
+        this.screen.removeObject("popup-bg");
+        this.screen.removeObject("popup-card");
+        this.screen.removeObject("popup-txt");
+      }
       this.screen.render();
     }, 1000 / this.fps);
     this.screen.canvas.addEventListener("mousedown", (event) =>
@@ -118,6 +173,12 @@ class Renderer {
     );
     window.addEventListener("wheel", (event) => this.wheel(event));
     window.addEventListener("keydown", (event) => this.keydown(event));
+    if (document.querySelector("ygol").getAttribute("matsrc"))
+      this.changeMat(document.querySelector("ygol").getAttribute("matsrc"));
+    if (document.querySelector("ygol").getAttribute("sleevesrc"))
+      this.changeSleeve(
+        document.querySelector("ygol").getAttribute("sleevesrc")
+      );
   }
   //load deck from an array of konamiid/names
   async loadDeck(maindeck, extradeck) {
@@ -125,7 +186,7 @@ class Renderer {
     for (let i = 0; i < maindeck.length; i++) {
       await this.screen.addObjectImg(
         `main${i}`,
-        "https://dlf2p.com/images/noimage.jpg",
+        this.noimage,
         1134,
         514,
         120, //360
@@ -142,7 +203,7 @@ class Renderer {
     for (let i = 0; i < extradeck.length; i++) {
       await this.screen.addObjectImg(
         `extra${i}`,
-        "https://dlf2p.com/images/noimage.jpg",
+        this.noimage,
         26,
         514,
         120,
@@ -248,17 +309,16 @@ class Renderer {
         obj.meta.list = null;
         document.getElementById(obj.id).src = obj.meta.isFaceup
           ? `https://dlf2p.com/images/cards/${obj.meta.cardid}.jpg`
-          : "https://dlf2p.com/images/noimage.jpg";
+          : this.noimage;
       }
     }
   }
   flipCard(el) {
     if (el.meta.cardid) {
       document.getElementById(el.id).src =
-        document.getElementById(el.id).src ==
-        "https://dlf2p.com/images/noimage.jpg"
+        document.getElementById(el.id).src == this.noimage
           ? `https://dlf2p.com/images/cards/${el.meta.cardid}.jpg`
-          : "https://dlf2p.com/images/noimage.jpg";
+          : this.noimage;
       el.meta.isFaceup = el.meta.isFaceup ? false : true;
     }
   }
@@ -300,7 +360,7 @@ class Renderer {
         for (let i = 0; i < 5; i++) {
           await this.screen.addObjectImg(
             `shuffle${i}`,
-            "https://dlf2p.com/images/noimage.jpg",
+            this.noimage,
             1134,
             464 + 30 * i,
             120,
@@ -321,15 +381,13 @@ class Renderer {
   }
   resetField() {
     for (let el of this.screen.objectList) {
-      if (el.meta.cardid)
-        document.getElementById(
-          el.id
-        ).src = `https://dlf2p.com/images/noimage.jpg`;
+      if (el.meta.cardid) document.getElementById(el.id).src = this.noimage;
     }
     this.screen.objectList = structuredClone(this.originalObjectList);
   }
   mousedown(event) {
     this.isMouseDown = true;
+    this.mouseHoldingDown = "pending";
     const rect = this.screen.canvas.getBoundingClientRect();
     this.mousedownPos = {
       x: event.clientX - rect.left,
@@ -338,6 +396,9 @@ class Renderer {
     this.movingObject = this.screen
       .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
       .at(-1).id;
+    setTimeout(() => {
+      if (this.mouseHoldingDown == "pending") this.mouseHoldingDown = "true";
+    }, this.mouseHoldDelay * 1000);
   }
   mousemove(event) {
     if (this.isMouseDown) {
@@ -346,7 +407,8 @@ class Renderer {
       if (
         this.mousedownPos.x != event.clientX - rect.left ||
         this.mousedownPos.y != event.clientY - rect.top
-      )
+      ) {
+        this.mouseHoldingDown = "false";
         for (let obj of this.screen.objectList) {
           if (obj.id == this.movingObject && obj.meta.isDraggable) {
             obj.x = event.clientX - rect.left - obj.width / 2;
@@ -359,88 +421,95 @@ class Renderer {
             this.closeCardList();
           }
         }
+      }
     }
   }
   mouseup(event) {
     this.isMouseDown = false;
-    const rect = this.screen.canvas.getBoundingClientRect();
-    this.mouseupPos = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-    if (
-      this.mousedownPos.x != this.mouseupPos.x ||
-      this.mousedownPos.y != this.mouseupPos.y
-    ) {
-      //snap card to zone
-      for (let clicked of this.screen.clickedObjects(
-        this.mouseupPos.x,
-        this.mouseupPos.y
-      )) {
-        if (clicked.id.includes("snapzone")) {
-          for (let obj of this.screen.objectList) {
-            if (obj.id == this.movingObject && obj.meta.isDraggable) {
-              if (clicked.id == "snapzone-hand") {
-                obj.y = 545;
-              } else {
-                obj.x = clicked.x + 30;
-                obj.y = clicked.y;
+    if (this.mouseHoldingDown == "true") {
+      this.mouseHoldingDown = "false";
+    } else {
+      this.mouseHoldingDown = "false";
+      const rect = this.screen.canvas.getBoundingClientRect();
+      this.mouseupPos = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+      if (
+        this.mousedownPos.x != this.mouseupPos.x ||
+        this.mousedownPos.y != this.mouseupPos.y
+      ) {
+        //snap card to zone
+        for (let clicked of this.screen.clickedObjects(
+          this.mouseupPos.x,
+          this.mouseupPos.y
+        )) {
+          if (clicked.id.includes("snapzone")) {
+            for (let obj of this.screen.objectList) {
+              if (obj.id == this.movingObject && obj.meta.isDraggable) {
+                if (clicked.id == "snapzone-hand") {
+                  obj.y = 545;
+                } else {
+                  obj.x = clicked.x + 30;
+                  obj.y = clicked.y;
+                }
+                if (!clicked.id.includes("snapzone-m")) obj.meta.angle = 0;
               }
-              if (!clicked.id.includes("snapzone-m")) obj.meta.angle = 0;
             }
           }
         }
       }
-    }
-    this.spreadHand();
-    if (
-      Math.abs(this.mousedownPos.x - this.mouseupPos.x) < this.snapTolerance &&
-      Math.abs(this.mousedownPos.y - this.mouseupPos.y) < this.snapTolerance
-    ) {
-      if (event.which == 1) {
-        if (
-          this.screen
-            .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-            .filter((a) => a.id == "list-bg").length
-        ) {
-          this.closeCardList();
-        }
-        if (
-          this.screen
-            .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-            .filter((a) => a.id.includes("snapzone-m")).length
-        ) {
-          //rotate card
-          let el = this.screen
-            .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-            .at(-1);
-          if (el.meta.cardid) el.meta.angle = el.meta.angle == 270 ? 0 : 270;
-        }
-        if (
-          this.screen
-            .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-            .filter((a) => a.id.includes("snapzone-p")).length &&
-          this.screen
-            .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-            .filter((a) => a.meta.cardid).length
-        ) {
-          this.openCardList();
-        }
-      }
-      //flip card
-      if (event.which == 3) {
-        if (
-          this.screen
-            .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-            .filter((a) => a.id == "snapzone-pd").length
-        ) {
-          this.shuffleDeck();
-        } else {
-          this.flipCard(
+      this.spreadHand();
+      if (
+        Math.abs(this.mousedownPos.x - this.mouseupPos.x) <
+          this.snapTolerance &&
+        Math.abs(this.mousedownPos.y - this.mouseupPos.y) < this.snapTolerance
+      ) {
+        if (event.which == 1) {
+          if (
             this.screen
               .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .at(-1)
-          );
+              .filter((a) => a.id == "list-bg").length
+          ) {
+            this.closeCardList();
+          }
+          if (
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.id.includes("snapzone-m")).length
+          ) {
+            //rotate card
+            let el = this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .at(-1);
+            if (el.meta.cardid) el.meta.angle = el.meta.angle == 270 ? 0 : 270;
+          }
+          if (
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.id.includes("snapzone-p")).length &&
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.meta.cardid).length
+          ) {
+            this.openCardList();
+          }
+        }
+        //flip card
+        if (event.which == 3) {
+          if (
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.id == "snapzone-pd").length
+          ) {
+            this.shuffleDeck();
+          } else {
+            this.flipCard(
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .at(-1)
+            );
+          }
         }
       }
     }
@@ -466,5 +535,13 @@ class Renderer {
         this.shuffleDeck();
       }
     }
+  }
+  changeMat(src) {
+    document.querySelector("ygol").setAttribute("matsrc", src);
+    document.getElementById("fieldbg").src = src;
+  }
+  changeSleeve(src) {
+    document.querySelector("ygol").setAttribute("sleevesrc", src);
+    this.noimage = src;
   }
 }

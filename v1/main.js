@@ -33,7 +33,7 @@ async function main() {
       );
   }
   let isRush = document.querySelector("ygol").getAttribute("rush");
-  const renderer = new Renderer(1280, 720, 60, 30, cardDb, ygolID, isRush);
+  const renderer = new Renderer(1280, 720, 60, 30, 0.5, cardDb, ygolID, isRush);
   document.querySelector("ygol").appendChild(renderer.screen.canvas);
   renderer.screen.canvas.oncontextmenu = () => false;
   document.getElementById("ygol-resetField").onclick = () =>

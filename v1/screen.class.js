@@ -48,6 +48,19 @@ class Screen {
       document.getElementById("ygol-cnv-images").appendChild(i);
     });
   }
+  addObjectText(id, color, x, y, width, meta) {
+    this.objectList.push({
+      id: id,
+      type: "CNV_TXT",
+      color: color,
+      src: null,
+      width: width,
+      height: null,
+      x: x,
+      y: y,
+      meta: meta,
+    });
+  }
   removeObject(id) {
     this.objectList = this.objectList.filter((a) => a.id != id);
     if (document.getElementById(id)) document.getElementById(id).remove();
@@ -88,6 +101,55 @@ class Screen {
             );
           }
           break;
+        case "CNV_TXT":
+          function drawWrappedText(
+            ctx,
+            text,
+            color = "#000000",
+            width = Infinity,
+            x = 0,
+            y = 0,
+            fontWeight = "",
+            fontSize = "10pt",
+            fontFamily = "Arial"
+          ) {
+            ctx.font = `${fontWeight} ${fontSize} ${fontFamily}`;
+            ctx.fillStyle = color;
+            ctx.textBaseline = "top";
+            const words = text.split(" ");
+            let line = "";
+            let lineHeight = parseInt(fontSize, 10) * 1.6;
+            function renderLine(line, x, y) {
+              ctx.fillText(line, x, y);
+              return y + lineHeight;
+            }
+            let currentY = y;
+            for (let word of words) {
+              const testLine = line + word + " ";
+              const metrics = ctx.measureText(testLine);
+              const testLineWidth = metrics.width;
+              if (testLineWidth > width && line.length > 0) {
+                currentY = renderLine(line, x, currentY);
+                line = word + " ";
+              } else {
+                line = testLine;
+              }
+            }
+            if (line.length > 0) {
+              renderLine(line, x, currentY);
+            }
+          }
+          drawWrappedText(
+            this.ctx,
+            obj.meta.text,
+            obj.color,
+            obj.width,
+            obj.x,
+            obj.y,
+            obj.meta.fontWeight,
+            obj.meta.fontSize,
+            obj.meta.fontFamily
+          );
       }
     }
   }
