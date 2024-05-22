@@ -13,7 +13,7 @@ class Screen {
       "<div id='ygol-cnv-images' style='display: none;'></div>"
     );
   }
-  addObjectRect(id, color, x, y, width, height, meta) {
+  addObjectRect(id, color, x, y, width, height, meta = {}) {
     this.objectList.push({
       id: id,
       type: "CNV_RECT",
@@ -26,7 +26,7 @@ class Screen {
       meta: meta,
     });
   }
-  addObjectImg(id, src, x, y, width, height, meta) {
+  addObjectImg(id, src, x, y, width, height, meta = {}) {
     //supported metadata: angle (degrees)
     this.objectList.push({
       id: id,
@@ -48,7 +48,7 @@ class Screen {
       document.getElementById("ygol-cnv-images").appendChild(i);
     });
   }
-  addObjectText(id, color, x, y, width, meta) {
+  addObjectText(id, color, x, y, width, meta = {}) {
     this.objectList.push({
       id: id,
       type: "CNV_TXT",

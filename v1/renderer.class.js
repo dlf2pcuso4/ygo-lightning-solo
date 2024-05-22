@@ -17,8 +17,10 @@ class Renderer {
     this.mousedownPos = { x: 0, y: 0 };
     this.mouseupPos = { x: 0, y: 0 };
     this.isMouseDown = false;
+    this.clicksWithinDelay = 0;
     this.mouseHoldingDown = "false";
     this.movingObject = "";
+    this.movingObjectOgPos = null;
     this.scrollY = 0;
     this.originalObjectList;
     this.shuffling = false;
@@ -26,6 +28,9 @@ class Renderer {
     this.yld = "";
     this.ydk = "";
     this.noimage = "https://dlf2p.com/images/noimage.jpg";
+    //debug
+    this.showHitboxes = true;
+    this.allowIllegalPlacement = false;
   }
   async loadField() {
     await this.screen.addObjectImg(
@@ -54,10 +59,23 @@ class Renderer {
         isDraggable: false,
       }
     );
+    await this.screen.addObjectImg(
+      "menu-toggle",
+      window.location.href.includes("ygo-lightning")
+        ? "v1/menu.png"
+        : "https://dlf2pcuso4.github.io/ygo-lightning-solo/v1/menu.png",
+      10,
+      10,
+      80,
+      80,
+      {
+        isDraggable: false,
+      }
+    );
     for (let i = 0; i < 5; i++) {
       this.screen.addObjectRect(
         `snapzone-m${i}`,
-        "#00000000",
+        this.showHitboxes ? "#ff000088" : "#00000000",
         181 + 184.5 * i,
         233,
         180,
@@ -70,7 +88,7 @@ class Renderer {
     for (let i = 0; i < 5; i++) {
       this.screen.addObjectRect(
         `snapzone-st${i}`,
-        "#00000000",
+        this.showHitboxes ? "#ff000088" : "#00000000",
         181 + 184.5 * i,
         420,
         180,
@@ -80,16 +98,32 @@ class Renderer {
         }
       );
     }
-    this.screen.addObjectRect(`snapzone-me1`, "#00000000", 363, 26, 180, 175, {
-      isDraggable: false,
-    });
-    this.screen.addObjectRect(`snapzone-me2`, "#00000000", 737, 26, 180, 175, {
-      isDraggable: false,
-    });
+    this.screen.addObjectRect(
+      `snapzone-me1`,
+      this.showHitboxes ? "#ff000088" : "#00000000",
+      363,
+      26,
+      180,
+      175,
+      {
+        isDraggable: false,
+      }
+    );
+    this.screen.addObjectRect(
+      `snapzone-me2`,
+      this.showHitboxes ? "#ff000088" : "#00000000",
+      737,
+      26,
+      180,
+      175,
+      {
+        isDraggable: false,
+      }
+    );
     for (let i = 0; i < 3; i++) {
       this.screen.addObjectRect(
         `snapzone-${["pb", "pg", "pd"][i]}`,
-        "#00000000",
+        this.showHitboxes ? "#ff000088" : "#00000000",
         1104,
         139 + 187.5 * i,
         180,
@@ -99,15 +133,31 @@ class Renderer {
         }
       );
     }
-    this.screen.addObjectRect(`snapzone-f`, "#00000000", -4, 327, 180, 175, {
-      isDraggable: false,
-    });
-    this.screen.addObjectRect(`snapzone-pe`, "#00000000", -4, 514, 180, 175, {
-      isDraggable: false,
-    });
+    this.screen.addObjectRect(
+      `snapzone-f`,
+      this.showHitboxes ? "#ff000088" : "#00000000",
+      -4,
+      327,
+      180,
+      175,
+      {
+        isDraggable: false,
+      }
+    );
+    this.screen.addObjectRect(
+      `snapzone-pe`,
+      this.showHitboxes ? "#ff000088" : "#00000000",
+      -4,
+      514,
+      180,
+      175,
+      {
+        isDraggable: false,
+      }
+    );
     this.screen.addObjectRect(
       `snapzone-hand`,
-      "#00000000",
+      this.showHitboxes ? "#ff000088" : "#00000000",
       200,
       600,
       880,
@@ -122,15 +172,9 @@ class Renderer {
         if (
           !this.screen.objectList.filter((a) => a.id == "popup-card").length
         ) {
-          this.screen.addObjectRect(
-            "popup-bg",
-            "#000000cc",
-            0,
-            0,
-            1280,
-            720,
-            {}
-          );
+          this.screen.addObjectRect("popup-bg", "#000000cc", 0, 0, 1280, 720, {
+            isDraggable: false,
+          });
           let id = this.screen
             .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
             .filter((a) => a.meta.cardid)
@@ -270,6 +314,45 @@ class Renderer {
     }
     return array;
   }
+  openMenu() {
+    this.screen.addObjectRect("menu-bg", "#000000aa", 0, 0, 1280, 720, {
+      isDraggable: false,
+    });
+    this.screen.moveToFront("menu-toggle");
+    this.screen.addObjectRect(
+      "menu-btn-import",
+      this.showHitboxes ? "#ff000088" : "#00000000",
+      20,
+      100,
+      500,
+      30
+    );
+    this.screen.addObjectText("menu-txt-import", "#ffffff", 20, 100, 1000, {
+      text: "Import deck from clipboard",
+      fontSize: "30pt",
+      fontFamily: "Bahnschrift light",
+    });
+    this.screen.addObjectRect(
+      "menu-btn-reset",
+      this.showHitboxes ? "#ff000088" : "#00000000",
+      20,
+      180,
+      500,
+      30
+    );
+    this.screen.addObjectText("menu-txt-reset", "#ffffff", 20, 180, 1000, {
+      text: "Reset field",
+      fontSize: "30pt",
+      fontFamily: "Bahnschrift light",
+    });
+  }
+  closeMenu() {
+    this.screen.removeObject("menu-bg");
+    this.screen.removeObject("menu-btn-import");
+    this.screen.removeObject("menu-txt-import");
+    this.screen.removeObject("menu-btn-reset");
+    this.screen.removeObject("menu-txt-reset");
+  }
   //list depends on mouseupPos
   openCardList() {
     this.scrollY = 0;
@@ -388,6 +471,7 @@ class Renderer {
   mousedown(event) {
     this.isMouseDown = true;
     this.mouseHoldingDown = "pending";
+    this.clicksWithinDelay += 1;
     const rect = this.screen.canvas.getBoundingClientRect();
     this.mousedownPos = {
       x: event.clientX - rect.left,
@@ -397,7 +481,9 @@ class Renderer {
       .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
       .at(-1).id;
     setTimeout(() => {
-      if (this.mouseHoldingDown == "pending") this.mouseHoldingDown = "true";
+      if (this.mouseHoldingDown == "pending" && this.clicksWithinDelay == 1)
+        this.mouseHoldingDown = "true";
+      this.clicksWithinDelay -= 1;
     }, this.mouseHoldDelay * 1000);
   }
   mousemove(event) {
@@ -411,6 +497,12 @@ class Renderer {
         this.mouseHoldingDown = "false";
         for (let obj of this.screen.objectList) {
           if (obj.id == this.movingObject && obj.meta.isDraggable) {
+            if (!this.movingObjectOgPos)
+              this.movingObjectOgPos = {
+                x: obj.x,
+                y: obj.y,
+                isList: !!obj.meta.list,
+              };
             obj.x = event.clientX - rect.left - obj.width / 2;
             obj.y = event.clientY - rect.top - obj.height / 2;
             this.screen.moveToFront(this.movingObject);
@@ -424,7 +516,7 @@ class Renderer {
       }
     }
   }
-  mouseup(event) {
+  async mouseup(event) {
     this.isMouseDown = false;
     if (this.mouseHoldingDown == "true") {
       this.mouseHoldingDown = "false";
@@ -439,12 +531,17 @@ class Renderer {
         this.mousedownPos.x != this.mouseupPos.x ||
         this.mousedownPos.y != this.mouseupPos.y
       ) {
+        //handle drag
         //snap card to zone
+        let illegal = this.screen.objectList.filter(
+          (a) => a.id == this.movingObject
+        )[0].meta.isDraggable;
         for (let clicked of this.screen.clickedObjects(
           this.mouseupPos.x,
           this.mouseupPos.y
         )) {
           if (clicked.id.includes("snapzone")) {
+            illegal = false;
             for (let obj of this.screen.objectList) {
               if (obj.id == this.movingObject && obj.meta.isDraggable) {
                 if (clicked.id == "snapzone-hand") {
@@ -458,6 +555,21 @@ class Renderer {
             }
           }
         }
+        //return to original pos if not snapped
+        if (illegal && !this.allowIllegalPlacement) {
+          for (let obj of this.screen.objectList) {
+            if (obj.id == this.movingObject) {
+              if (this.movingObjectOgPos.isList) {
+                obj.x = 300;
+                obj.y = 545;
+              } else {
+                obj.x = this.movingObjectOgPos.x;
+                obj.y = this.movingObjectOgPos.y;
+              }
+            }
+          }
+        }
+        this.movingObjectOgPos = null;
       }
       this.spreadHand();
       if (
@@ -465,7 +577,9 @@ class Renderer {
           this.snapTolerance &&
         Math.abs(this.mousedownPos.y - this.mouseupPos.y) < this.snapTolerance
       ) {
+        //handle click
         if (event.which == 1) {
+          //left click
           if (
             this.screen
               .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
@@ -494,9 +608,43 @@ class Renderer {
           ) {
             this.openCardList();
           }
+          if (this.screen.objectList.filter((a) => a.id == "menu-bg").length) {
+            //handle clicked menu button
+            if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id == "menu-btn-reset").length
+            ) {
+              this.resetField();
+            }
+            if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id == "menu-btn-import").length
+            ) {
+              let clip = await navigator.clipboard.readText();
+              console.log(clip);
+              if (!clip) {
+                alert("Error: No deck in clipboard");
+              } else {
+                try {
+                  this.loadYdk(this.ygolDeck.convert(clip, "ydk"));
+                } catch (e) {
+                  alert("Error: Invalid deck in clipboard");
+                }
+              }
+            }
+            this.closeMenu();
+          } else if (
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.id == "menu-toggle").length
+          ) {
+            this.openMenu();
+          }
         }
-        //flip card
         if (event.which == 3) {
+          //right click
           if (
             this.screen
               .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)

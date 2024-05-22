@@ -124,8 +124,9 @@ class YgolDeck {
           a.includes("!side")
       );
     for (let i = 0; i < arr.length; i++) {
-      if (!isNaN(arr[i])) {
-        arr[i] = this.db.filter((a) => a.konamiID == arr[i])[0].name;
+      console.log(arr[i]);
+      if (!isNaN(arr[i]) && arr[i][0] != "#" && arr[i][0] != "!") {
+        arr[i] = this.db.filter((a) => a.konamiID == Number(arr[i]))[0].name;
       }
     }
     return arr.join("\n");
@@ -175,7 +176,8 @@ class YgolDeck {
     return "yld://" + this.base64Encode(this.base13Decode(d));
   }
   dlf2pV2_to_namelist(dlf2pV2) {
-    let split = decodeURIComponent(dlf2pV2).split("_");
+    let c = dlf2pV2.split("_")[0] == "2" ? dlf2pV2.slice(2) : dlf2pV2;
+    let split = decodeURIComponent(c).split("_");
     let arr = this.base13Encode(this.base63Decode(split[0]));
     if (arr[0] != "a") arr = "0" + arr;
     arr = arr
