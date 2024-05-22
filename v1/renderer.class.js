@@ -659,7 +659,6 @@ class Renderer {
                 .filter((a) => a.id == "menu-btn-import").length
             ) {
               let clip = await navigator.clipboard.readText();
-              console.log(clip);
               if (!clip) {
                 alert("Error: No deck in clipboard");
               } else {

@@ -124,7 +124,6 @@ class YgolDeck {
           a.includes("!side")
       );
     for (let i = 0; i < arr.length; i++) {
-      console.log(arr[i]);
       if (!isNaN(arr[i]) && arr[i][0] != "#" && arr[i][0] != "!") {
         arr[i] = this.db.filter((a) => a.konamiID == Number(arr[i]))[0].name;
       }
