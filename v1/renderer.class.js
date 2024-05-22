@@ -330,9 +330,11 @@ class Renderer {
   }
   preloadImages() {
     for (let el of this.screen.objectList) {
-      const i = document.createElement("img");
-      i.src = `https://dlf2p.com/images/cards/${el.meta.cardid}.jpg`;
-      document.getElementById("ygol-cnv-images").appendChild(i);
+      if (el.meta.cardid) {
+        const i = document.createElement("img");
+        i.src = `https://dlf2p.com/images/cards/${el.meta.cardid}.jpg`;
+        document.getElementById("ygol-cnv-images").appendChild(i);
+      }
     }
   }
   shuffle(arr) {
