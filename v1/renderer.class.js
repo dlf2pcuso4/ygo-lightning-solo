@@ -324,6 +324,10 @@ class Renderer {
     }
     this.originalObjectList = structuredClone(this.screen.objectList);
     this.preloadImages();
+    for (let el of this.screen.objectList) {
+      if (el.id == "lp-num")
+        el.meta.text = maindeck.length < 40 ? "4000" : "8000";
+    }
   }
   loadYld(yld) {
     this.yld = yld;
