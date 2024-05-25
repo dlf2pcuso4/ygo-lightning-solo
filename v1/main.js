@@ -12,7 +12,7 @@ async function main() {
     );
     await addCss(`
     body {
-      background-color: #333333;
+      background-color: #000000;
       height: 100vh;
       display: flex;
       justify-content: center;

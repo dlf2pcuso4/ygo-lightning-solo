@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Deck Converter</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+        font-family: bahnschrift;
+        color: #ffffff;
+      }
+      ygol {
+        display: none;
+      }
+      textarea {
+        width: 50vw;
+        height: 50vh;
+        resize: none;
+      }
+      select,
+      option,
+      textarea {
+        color: #000000;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="width: min-content">
+      <h1>Yugioh Deckcode Converter</h1>
+      <label>Convert to:</label>
+      <select>
+        <option value="yld">YLD</option>
+        <option value="ydk">YDK</option>
+        <option value="ydke">YDKE</option>
+        <option value="dlf2pV2">DLF2P (V2)</option>
+        <option value="dlf2pV3">DLF2P (V3)</option>
+        <option value="namelist">Namelist</option>
+      </select>
+      <textarea></textarea>
+    </div>
+  </body>
+  <script src="v1/main.js"></script>
+  <script>
+    function copy(text) {
+      let input = document.createElement("textarea");
+      input.innerHTML = text;
+      document.body.appendChild(input);
+      input.select();
+      let result = document.execCommand("copy");
+      document.body.removeChild(input);
+      return result;
+    }
+    document.onpaste = async (event) => {
+      setTimeout(() => {
+        let isRush = document.querySelector("ygol").getAttribute("rush");
+        let d = new YgolDeck(cardDb, ygolID, isRush);
+        let t = document.querySelector("textarea").value;
+        if (copy(d.convert(t, document.querySelector("select").value)))
+          alert("Copied");
+      }, 300);
+    };
+  </script>
+</html>

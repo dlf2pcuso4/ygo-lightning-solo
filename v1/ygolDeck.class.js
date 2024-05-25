@@ -14,6 +14,8 @@ class YgolDeck {
         return this.ydk_to_ydke(this.namelist_to_ydk(this.toNamelist(d)));
       case "dlf2pV2":
         return this.namelist_to_dlf2pV2(this.toNamelist(d));
+      case "namelist":
+        return this.toNamelist(d);
     }
   }
   toNamelist(d) {
@@ -114,14 +116,16 @@ class YgolDeck {
       .join("\n");
   }
   ydk_to_namelist(ydk) {
+    if (!ydk.split("\n").filter((a) => !isNaN(a)).length) return ydk;
     let arr = ydk
       .split("\n")
       .filter(
         (a) =>
-          !isNaN(a) ||
-          a.includes("#main") ||
-          a.includes("#extra") ||
-          a.includes("!side")
+          a != "" &&
+          (!isNaN(a) ||
+            a.includes("#main") ||
+            a.includes("#extra") ||
+            a.includes("!side"))
       );
     for (let i = 0; i < arr.length; i++) {
       if (!isNaN(arr[i]) && arr[i][0] != "#" && arr[i][0] != "!") {
@@ -138,6 +142,7 @@ class YgolDeck {
       );
       if (card.length) arr[i] = card[0].konamiID || arr[i];
     }
+    if (!namelist.includes("!side")) arr.push("!side");
     return arr.join("\n");
   }
   yld_to_namelist(yld) {
