@@ -24,6 +24,7 @@ class Renderer {
     this.scrollY = 0;
     this.originalObjectList;
     this.shuffling = false;
+    this.changingLifePoints = false;
     this.ygolDeck = new YgolDeck(cardDb, ygolID, isRush);
     this.yld = "";
     this.ydk = "";
@@ -162,6 +163,32 @@ class Renderer {
       600,
       880,
       120,
+      {
+        isDraggable: false,
+      }
+    );
+    this.screen.addObjectRect(`lp-box`, "#00000066", 10, 90, 240, 70, {
+      isDraggable: false,
+    });
+    this.screen.addObjectText("lp-txt", "#ffffff", 20, 100, 800, {
+      text: "LP:",
+      fontSize: "40pt",
+      fontFamily: "Bahnschrift light",
+    });
+    this.screen.addObjectText("lp-num", "#ffffff", 100, 100, 800, {
+      text: "8000",
+      fontSize: "40pt",
+      fontFamily: "Bahnschrift light",
+    });
+    await this.screen.addObjectImg(
+      "dice",
+      window.location.href.includes("ygo-lightning")
+        ? "v1/1.png"
+        : "https://dlf2pcuso4.github.io/ygo-lightning-solo/v1/1.png",
+      1180,
+      30,
+      60,
+      60,
       {
         isDraggable: false,
       }
@@ -351,7 +378,7 @@ class Renderer {
     return array;
   }
   openMenu() {
-    this.screen.addObjectRect("menu-bg", "#000000aa", 0, 0, 1280, 720, {
+    this.screen.addObjectRect("menu-bg", "#000000cc", 0, 0, 1280, 720, {
       isDraggable: false,
     });
     this.screen.moveToFront("menu-toggle");
@@ -615,6 +642,7 @@ class Renderer {
       ) {
         //handle click
         if (event.which == 1) {
+          let closedCardList = false;
           //left click
           if (
             this.screen
@@ -622,6 +650,7 @@ class Renderer {
               .filter((a) => a.id == "list-bg").length
           ) {
             this.closeCardList();
+            closedCardList = true;
           }
           if (
             this.screen
@@ -676,6 +705,28 @@ class Renderer {
               .filter((a) => a.id == "menu-toggle").length
           ) {
             this.openMenu();
+          } else if (
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.id == "lp-box").length &&
+            !closedCardList
+          ) {
+            for (let el of this.screen.objectList) {
+              if (el.id == "lp-num") {
+                el.color = el.color == "#ffffff" ? "#33ff33" : "#ffffff";
+                if (el.color == "#ffffff") this.changingLifePoints = false;
+              }
+            }
+          }
+          if (
+            this.screen
+              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+              .filter((a) => a.id == "dice").length &&
+            !closedCardList
+          ) {
+            for (let el of this.screen.objectList) {
+              if (el.id == "dice") this.rollDice();
+            }
           }
         }
         if (event.which == 3) {
@@ -717,6 +768,24 @@ class Renderer {
       if (event.key == "s") {
         this.shuffleDeck();
       }
+      if (!isNaN(event.key)) {
+        for (let el of this.screen.objectList) {
+          if (el.id == "lp-num" && el.color != "#ffffff") {
+            if (this.changingLifePoints) {
+              el.meta.text += event.key;
+            } else {
+              this.changingLifePoints = true;
+              el.meta.text = event.key;
+            }
+          }
+        }
+      }
+      if (event.key == "Backspace") {
+        for (let el of this.screen.objectList) {
+          if (el.id == "lp-num" && el.color != "#ffffff")
+            el.meta.text = el.meta.text.slice(0, -1);
+        }
+      }
     }
   }
   changeMat(src) {
@@ -733,5 +802,19 @@ class Renderer {
       if (el.src == this.noimage) el.src = src;
     }
     this.noimage = src;
+  }
+  rollDice(i) {
+    if (i != 5) {
+      let src = document.getElementById("dice").src;
+      while (src == document.getElementById("dice").src) {
+        src =
+          document.getElementById("dice").src.slice(0, -5) +
+          `${Math.floor(Math.random() * 6) + 1}.png`;
+      }
+      document.getElementById("dice").src = src;
+      setTimeout(() => {
+        this.rollDice(i ? i + 1 : 1);
+      }, 60);
+    }
   }
 }
