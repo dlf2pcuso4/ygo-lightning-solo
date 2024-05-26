@@ -28,148 +28,113 @@ class Renderer {
     this.ygolDeck = new YgolDeck(cardDb, ygolID, isRush);
     this.yld = "";
     this.ydk = "";
-    this.noimage = "https://dlf2p.com/images/noimage.jpg";
+    this.noimage = this.url("v1/noimage.jpg");
     //debug
     this.showHitboxes = false;
+    this.hitboxColor = this.showHitboxes ? "#ff000088" : "#00000000";
     this.allowIllegalPlacement = false;
+  }
+  url(url) {
+    return window.location.href.includes("ygo-lightning")
+      ? url
+      : "https://dlf2pcuso4.github.io/ygo-lightning-solo/" + url;
   }
   async loadField() {
     await this.screen.addObjectImg(
       "fieldbg",
-      window.location.href.includes("ygo-lightning")
-        ? "v1/fieldbg.png"
-        : "https://dlf2pcuso4.github.io/ygo-lightning-solo/v1/fieldbg.png",
+      this.url("v1/fieldbg.png"),
       0,
       0,
       1280,
-      720,
-      {
-        isDraggable: false,
-      }
+      720
     );
     await this.screen.addObjectImg(
       "field",
-      window.location.href.includes("ygo-lightning")
-        ? "v1/field.png"
-        : "https://dlf2pcuso4.github.io/ygo-lightning-solo/v1/field.png",
+      this.url("v1/field.png"),
       0,
       0,
       1280,
-      720,
-      {
-        isDraggable: false,
-      }
+      720
     );
     await this.screen.addObjectImg(
       "menu-toggle",
-      window.location.href.includes("ygo-lightning")
-        ? "v1/menu.png"
-        : "https://dlf2pcuso4.github.io/ygo-lightning-solo/v1/menu.png",
+      this.url("v1/menu.png"),
       10,
       10,
       80,
-      80,
-      {
-        isDraggable: false,
-      }
+      80
     );
     for (let i = 0; i < 5; i++) {
       this.screen.addObjectRect(
         `snapzone-m${i}`,
-        this.showHitboxes ? "#ff000088" : "#00000000",
+        this.hitboxColor,
         181 + 184.5 * i,
         233,
         180,
-        175,
-        {
-          isDraggable: false,
-        }
+        175
       );
     }
     for (let i = 0; i < 5; i++) {
       this.screen.addObjectRect(
         `snapzone-st${i}`,
-        this.showHitboxes ? "#ff000088" : "#00000000",
+        this.hitboxColor,
         181 + 184.5 * i,
         420,
         180,
-        175,
-        {
-          isDraggable: false,
-        }
+        175
       );
     }
     this.screen.addObjectRect(
       `snapzone-me1`,
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       363,
       26,
       180,
-      175,
-      {
-        isDraggable: false,
-      }
+      175
     );
     this.screen.addObjectRect(
       `snapzone-me2`,
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       737,
       26,
       180,
-      175,
-      {
-        isDraggable: false,
-      }
+      175
     );
     for (let i = 0; i < 3; i++) {
       this.screen.addObjectRect(
         `snapzone-${["pb", "pg", "pd"][i]}`,
-        this.showHitboxes ? "#ff000088" : "#00000000",
+        this.hitboxColor,
         1104,
         139 + 187.5 * i,
         180,
-        175,
-        {
-          isDraggable: false,
-        }
+        175
       );
     }
     this.screen.addObjectRect(
       `snapzone-f`,
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       -4,
       327,
       180,
-      175,
-      {
-        isDraggable: false,
-      }
+      175
     );
     this.screen.addObjectRect(
       `snapzone-pe`,
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       -4,
       514,
       180,
-      175,
-      {
-        isDraggable: false,
-      }
+      175
     );
     this.screen.addObjectRect(
       `snapzone-hand`,
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       200,
       600,
       880,
-      120,
-      {
-        isDraggable: false,
-      }
+      120
     );
-    this.screen.addObjectRect(`lp-box`, "#00000066", 10, 90, 240, 70, {
-      isDraggable: false,
-    });
+    this.screen.addObjectRect(`lp-box`, "#00000066", 10, 90, 240, 70);
     this.screen.addObjectText("lp-txt", "#ffffff", 20, 100, 800, {
       text: "LP:",
       fontSize: "40pt",
@@ -182,16 +147,11 @@ class Renderer {
     });
     await this.screen.addObjectImg(
       "dice",
-      window.location.href.includes("ygo-lightning")
-        ? "v1/1.png"
-        : "https://dlf2pcuso4.github.io/ygo-lightning-solo/v1/1.png",
+      this.url("v1/1.png"),
       1180,
       30,
       60,
-      60,
-      {
-        isDraggable: false,
-      }
+      60
     );
     setInterval(async () => {
       //show card info when holding down mouse
@@ -199,9 +159,7 @@ class Renderer {
         if (
           !this.screen.objectList.filter((a) => a.id == "popup-card").length
         ) {
-          this.screen.addObjectRect("popup-bg", "#000000cc", 0, 0, 1280, 720, {
-            isDraggable: false,
-          });
+          this.screen.addObjectRect("popup-bg", "#000000cc", 0, 0, 1280, 720);
           let id = this.screen
             .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
             .filter((a) => a.meta.cardid)
@@ -215,10 +173,7 @@ class Renderer {
             0,
             0,
             360,
-            525,
-            {
-              isDraggable: false,
-            }
+            525
           );
           this.screen.addObjectText("popup-txt", "#ffffff", 400, 30, 800, {
             text: card.description,
@@ -388,7 +343,7 @@ class Renderer {
     this.screen.moveToFront("menu-toggle");
     this.screen.addObjectRect(
       "menu-btn-import",
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       20,
       100,
       500,
@@ -401,7 +356,7 @@ class Renderer {
     });
     this.screen.addObjectRect(
       "menu-btn-reset",
-      this.showHitboxes ? "#ff000088" : "#00000000",
+      this.hitboxColor,
       20,
       180,
       500,
