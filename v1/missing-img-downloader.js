@@ -1,4 +1,9 @@
 //run this inside duellinksmeta.com
+function makeValidFileName(str) {
+  let fileName = str.replace(/[^a-zA-Z0-9\s_\-\.\(\)%]/g, "");
+  fileName = fileName.replace(/\s+/g, "_");
+  return fileName.substring(0, 255);
+}
 function downloadResizedImage(imageUrl, width, height, name) {
   return new Promise((resolve, reject) => {
     const tempImg = new Image();
@@ -50,7 +55,9 @@ function addScript(name) {
       `https://s3.duellinksmeta.com/cards/${missingCards[i]._id}_w420.webp`,
       768,
       1126,
-      `${missingCards[i].name}${missingCards[i].rush ? " [RUSH]" : ""}.jpg`
+      makeValidFileName(
+        `${missingCards[i].name}${missingCards[i].rush ? " [RUSH]" : ""}.jpg`
+      )
     );
   }
 })();
