@@ -29,6 +29,7 @@ class Renderer {
     this.yld = "";
     this.ydk = "";
     this.noimage = this.url("v1/noimage.jpg");
+    this.errorimage = this.url("v1/errorimage.jpg");
     //debug
     this.showHitboxes = false;
     this.hitboxColor = this.showHitboxes ? "#ff000088" : "#00000000";
@@ -38,6 +39,11 @@ class Renderer {
     return window.location.href.includes("ygo-lightning")
       ? url
       : "https://dlf2pcuso4.github.io/ygo-lightning-solo/" + url;
+  }
+  name_url(str) {
+    let fileName = str.replace(/[^a-zA-Z0-9\s_\-\.\(\)%]/g, "");
+    fileName = fileName.replace(/\s+/g, "_");
+    return fileName.substring(0, 255);
   }
   async loadField() {
     await this.screen.addObjectImg(
@@ -160,16 +166,14 @@ class Renderer {
           !this.screen.objectList.filter((a) => a.id == "popup-card").length
         ) {
           this.screen.addObjectRect("popup-bg", "#000000cc", 0, 0, 1280, 720);
-          let id = this.screen
+          let cardname = this.screen
             .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
-            .filter((a) => a.meta.cardid)
-            .at(-1).meta.cardid;
-          let card = this.ygolDeck.db.filter(
-            (a) => a.konamiID == id || a.name == id
-          )[0];
+            .filter((a) => a.meta.cardname)
+            .at(-1).meta.cardname;
+          let card = this.ygolDeck.db.filter((a) => a.name == cardname)[0];
           await this.screen.addObjectImg(
             "popup-card",
-            `https://dlf2p.com/images/cards/${id}.jpg`,
+            this.url(`cards/${this.name_url(cardname)}.jpg`),
             0,
             0,
             360,
@@ -240,9 +244,10 @@ class Renderer {
       }
     }
   }
-  //load deck from an array of konamiid/names
-  async loadDeck(maindeck, extradeck) {
+  async loadDeckFromNamelist(namelist) {
     this.deleteDeck();
+    let maindeck = namelist.split("#main")[1].split("#extra")[0].split("\n");
+    let extradeck = namelist.split("#extra")[1].split("!side")[0].split("\n");
     for (let i = 0; i < maindeck.length; i++) {
       await this.screen.addObjectImg(
         `main${i}`,
@@ -254,9 +259,10 @@ class Renderer {
         {
           angle: 0,
           isDraggable: true,
-          cardid: maindeck[i],
+          cardname: maindeck[i],
           list: null,
           isFaceup: false,
+          errorSrc: this.errorimage,
         }
       );
     }
@@ -271,9 +277,10 @@ class Renderer {
         {
           angle: 0,
           isDraggable: true,
-          cardid: extradeck[i],
+          cardname: extradeck[i],
           list: null,
           isFaceup: false,
+          errorSrc: this.errorimage,
         }
       );
     }
@@ -286,27 +293,14 @@ class Renderer {
   }
   loadYld(yld) {
     this.yld = yld;
-    this.loadYdk(
-      this.ygolDeck.namelist_to_ydk(this.ygolDeck.yld_to_namelist(yld))
-    );
+    this.loadDeckFromNamelist(this.ygolDeck.yld_to_namelist(yld));
   }
   loadYdk(ydk) {
     this.ydk = ydk;
-    let maindeck = ydk
-      .split("#extra")[0]
-      .split("\n")
-      .filter((a) => !a.includes("#") && !a.includes("!") && a.length > 1);
-    let extradeck = ydk
-      .split("#extra")[1]
-      .split("!side")[0]
-      .split("\n")
-      .filter((a) => !a.includes("#") && !a.includes("!") && a.length > 1);
-    this.loadDeck(maindeck, extradeck);
+    this.loadDeckFromNamelist(this.ygolDeck.ydk_to_namelist(ydk));
   }
   loadDlf2pV2(dlf2pV2) {
-    this.loadYdk(
-      this.ygolDeck.namelist_to_ydk(this.ygolDeck.dlf2pV2_to_namelist(dlf2pV2))
-    );
+    this.loadDeckFromNamelist(this.ygolDeck.dlf2pV2_to_namelist(dlf2pV2));
   }
   deleteDeck() {
     for (let el of this.screen.objectList) {
@@ -316,9 +310,9 @@ class Renderer {
   }
   preloadImages() {
     for (let el of this.screen.objectList) {
-      if (el.meta.cardid) {
+      if (el.meta.cardname) {
         const i = document.createElement("img");
-        i.src = `https://dlf2p.com/images/cards/${el.meta.cardid}.jpg`;
+        i.src = this.url(`cards/${this.name_url(el.meta.cardname)}.jpg`);
         document.getElementById("ygol-cnv-images").appendChild(i);
       }
     }
@@ -386,16 +380,16 @@ class Renderer {
       this.mouseupPos.x,
       this.mouseupPos.y
     )) {
-      if (obj.meta.cardid) {
+      if (obj.meta.cardname) {
         const pile = this.screen
           .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
           .filter((a) => a.id.includes("snapzone-p"))[0];
         obj.meta.list = { x: pile.x, y: pile.y };
         obj.x = pos.x;
         obj.y = pos.y;
-        document.getElementById(
-          obj.id
-        ).src = `https://dlf2p.com/images/cards/${obj.meta.cardid}.jpg`;
+        document.getElementById(obj.id).src = this.url(
+          `cards/${this.name_url(obj.meta.cardname)}.jpg`
+        );
         this.screen.moveToFront(obj.id);
         pos.x += 120;
         if (pos.x == 1200) {
@@ -413,16 +407,16 @@ class Renderer {
         obj.y = obj.meta.list.y;
         obj.meta.list = null;
         document.getElementById(obj.id).src = obj.meta.isFaceup
-          ? `https://dlf2p.com/images/cards/${obj.meta.cardid}.jpg`
+          ? this.url(`cards/${this.name_url(obj.meta.cardname)}.jpg`)
           : this.noimage;
       }
     }
   }
   flipCard(el) {
-    if (el.meta.cardid) {
+    if (el.meta.cardname) {
       document.getElementById(el.id).src =
         document.getElementById(el.id).src == this.noimage
-          ? `https://dlf2p.com/images/cards/${el.meta.cardid}.jpg`
+          ? this.url(`cards/${this.name_url(el.meta.cardname)}.jpg`)
           : this.noimage;
       el.meta.isFaceup = el.meta.isFaceup ? false : true;
     }
@@ -486,7 +480,7 @@ class Renderer {
   }
   resetField() {
     for (let el of this.screen.objectList) {
-      if (el.meta.cardid) document.getElementById(el.id).src = this.noimage;
+      if (el.meta.cardname) document.getElementById(el.id).src = this.noimage;
     }
     this.screen.objectList = structuredClone(this.originalObjectList);
   }
@@ -620,7 +614,8 @@ class Renderer {
             let el = this.screen
               .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
               .at(-1);
-            if (el.meta.cardid) el.meta.angle = el.meta.angle == 270 ? 0 : 270;
+            if (el.meta.cardname)
+              el.meta.angle = el.meta.angle == 270 ? 0 : 270;
           }
           if (
             this.screen
@@ -628,7 +623,7 @@ class Renderer {
               .filter((a) => a.id.includes("snapzone-p")).length &&
             this.screen
               .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.meta.cardid).length
+              .filter((a) => a.meta.cardname).length
           ) {
             this.openCardList();
           }
