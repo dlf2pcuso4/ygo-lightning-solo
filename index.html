@@ -71,62 +71,153 @@
     </style>
   </head>
   <body></body>
+  <script src="v1/profile.class.js"></script>
+  <script src="v1/cardDb.js"></script>
+  <script src="v1/ygolID.js"></script>
+  <script src="v1/ygolDeck.class.js"></script>
   <script>
     let indexScreen = `
     <div id="body">
       <p>Create a new user profile:</p>
       <div>
-        <input id="newProfileTxt" type="text" placeholder="Your username..." />
-        <button id="newProfile">Create</button>
+        <input id="newProfile" type="text" placeholder="Your username..." />
+        <button onclick="newProfile()">Create</button>
       </div>
       <p>Or alternatively, paste in your existing profile code:</p>
       <div>
-        <input id="loadProfileTxt" type="text" placeholder="Your profile code..." />
-        <button id="loadProfile">Load Existing Profile</button>
+        <input id="loadProfile" type="text" placeholder="Your profile code..." />
+        <button onclick="loadProfile()">Load User Data</button>
       </div>
     </div>
     `;
     let mainScreen = `
     <div id="body">
-      <p>Logged in as:&nbsp;</p>
-      <button id="changeAccessories">Edit Accessories</button><br />
-      <button id="addDeck">Add Deck</button>
+      <p>Current user:&nbsp;</p>
+      <button onclick="changeAccessories()">Edit Accessories</button><br />
+      <button onclick="addDeck()">Add Deck</button>
       <p>Select saved deck:</p>
       <select id="savedDecks">
         <option value="">Click to select deck...</option>
       </select>
       <br />
-      <button id="useDeck">Use Deck</button><br />
-      <button id="editDeck">Edit Deck</button><br />
-      <button id="deleteDeck">Delete Deck</button>
+      <button onclick="useDeck()">Use Deck</button><br />
+      <button onclick="editDeck()">Edit Deck</button><br />
+      <button onclick="deleteDeck()">Delete Deck</button>
+      <p>Get a new profile code every time you update your<br />profile to save your changes:</p>
+      <button onclick="getProfileCode()">Get profile code</button><br />
+      <button onclick="location.reload()">Exit</button>
     </div>
     `;
     let accessoriesScreen = `
     <div id="body">
       <p>Edit game mat image:</p>
       <div>
-        <input id="changeMatTxt" type="text" placeholder="Image url..." />
-        <button id="changeMat">Save</button>
+        <input id="changeMat" type="text" placeholder="Image url..." />
+        <button onclick="changeMat()">Save</button>
       </div>
       <p>Edit sleeve image:</p>
       <div>
-        <input id="changeSleeveTxt" type="text" placeholder="Image url..." />
-        <button id="changeSleeve">Save</button>
+        <input id="changeSleeve" type="text" placeholder="Image url..." />
+        <button onclick="changeSleeve()">Save</button>
       </div>
+      <button onclick="openMain()">Back</button>
     </div>
     `;
     let addDeckScreen = `
     <div id="body">
       <p>Deck name:</p>
-      <input id="deckNameTxt" type="text" placeholder="Deck name..." />
+      <input id="deckName" type="text" placeholder="Deck name..." />
       <p>Deck code (ydk/ydke/yld):</p>
-      <input id="deckCodeTxt" type="text" placeholder="Deck code..." /><br />
-      <button id="saveDeck">Save</button>
+      <input id="deckCode" type="text" placeholder="Deck code..." /><br />
+      <button onclick="saveDeck()">Save</button>
+      <button onclick="openMain()">Back</button>
     </div>
     `;
+    let profile = new Profile("");
+    let ygolDeck = new YgolDeck(cardDb, ygolID, false);
     document.body.innerHTML = indexScreen;
-    document.getElementById("newProfile").onclick = () => {
-      alert("Website under construction, check back later...");
-    };
+    function openMain() {
+      document.body.innerHTML = mainScreen;
+      document.querySelector("p").innerHTML += profile.username;
+      for (let deck of profile.decks) {
+        document.getElementById(
+          "savedDecks"
+        ).innerHTML += `<option value="${deck.yld}">${deck.name}</option>`;
+      }
+    }
+    function newProfile() {
+      profile.username = document.getElementById("newProfile").value;
+      openMain();
+    }
+    function loadProfile() {
+      profile.unpackURL(document.getElementById("loadProfile").value);
+      openMain();
+    }
+    function changeAccessories() {
+      document.body.innerHTML = accessoriesScreen;
+      document.getElementById("changeMat").value = profile.mat;
+      document.getElementById("changeSleeve").value = profile.sleeve;
+    }
+    function addDeck() {
+      document.body.innerHTML = addDeckScreen;
+    }
+    function changeMat() {
+      profile.mat = document.getElementById("changeMat").value;
+    }
+    function changeSleeve() {
+      profile.sleeve = document.getElementById("changeSleeve").value;
+    }
+    function saveDeck() {
+      if (document.getElementById("deckName").value) {
+        if (
+          profile.decks.filter(
+            (a) => a.name == document.getElementById("deckName").value
+          ).length == 0
+        ) {
+          profile.decks.push({
+            name: document.getElementById("deckName").value,
+            yld: ygolDeck
+              .convert(document.getElementById("deckCode").value, "yld")
+              .replace("yld://", ""),
+            rush: false,
+          });
+          openMain();
+        } else {
+          alert("Deck name must be unique from existing decks.");
+        }
+      } else {
+        alert("Enter a deck name.");
+      }
+    }
+    function useDeck() {
+      window.open(
+        `test-hands.html?yld=${
+          document.getElementById("savedDecks").value
+        }&matsrc=${encodeURIComponent(
+          profile.mat
+        )}&sleevesrc=${encodeURIComponent(profile.sleeve)}`
+      );
+    }
+    function editDeck() {
+      alert("Development in progress, check again after some time...");
+    }
+    function deleteDeck() {
+      profile.decks = profile.decks.filter(
+        (a) => a.yld != document.getElementById("savedDecks").value
+      );
+      openMain();
+    }
+    function getProfileCode() {
+      window.open(
+        "profile.html?p=" + encodeURIComponent(profile.createURL()),
+        "_self"
+      );
+    }
+    const params = new URL(document.location).searchParams;
+    const p = params.get("p");
+    if (p) {
+      profile.unpackURL(p);
+      openMain();
+    }
   </script>
 </html>

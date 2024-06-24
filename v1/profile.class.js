@@ -4,10 +4,8 @@ class Profile {
     this.mat = "";
     this.sleeve = "";
     this.decks = [];
-    this.url = "";
   }
-  scramble(str) {
-    const txt = decodeURIComponent(str);
+  scramble(txt) {
     const normal =
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const scrambled =
@@ -20,10 +18,9 @@ class Profile {
         result += letter;
       }
     }
-    return encodeURIComponent(result);
+    return result;
   }
-  unscramble(str) {
-    const txt = decodeURIComponent(str);
+  unscramble(txt) {
     const normal =
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     const scrambled =
@@ -36,23 +33,17 @@ class Profile {
         result += letter;
       }
     }
-    return encodeURIComponent(result);
+    return result;
   }
   createURL() {
-    this.url = `https://dlf2pcuso4.github.io/ygo-lightning-solo/?user=${encodeURIComponent(
-      `${encodeURIComponent(this.scramble(this.username))}/
-      ${encodeURIComponent(this.scramble(this.mat))}/
-      ${encodeURIComponent(this.scramble(this.sleeve))}/
-      ${encodeURIComponent(this.scramble(JSON.stringify(this.decks)))}`
-    )}`;
-    return this.url;
+    return `${encodeURIComponent(
+      this.scramble(this.username)
+    )}/${encodeURIComponent(this.scramble(this.mat))}/${encodeURIComponent(
+      this.scramble(this.sleeve)
+    )}/${encodeURIComponent(this.scramble(JSON.stringify(this.decks)))}`;
   }
   unpackURL(url) {
-    this.url = url;
-    let code = url.includes("user=")
-      ? url.split("user=")[1].split("&")[0]
-      : url;
-    let split = decodeURIComponent(code).split("/");
+    let split = url.split("/");
     this.username = this.unscramble(decodeURIComponent(split[0]));
     this.mat = this.unscramble(decodeURIComponent(split[1]));
     this.sleeve = this.unscramble(decodeURIComponent(split[2]));
