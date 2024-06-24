@@ -43,7 +43,7 @@ class Renderer {
   }
   name_url(str) {
     let fileName = str.replace(/[^a-zA-Z0-9\s_\-\.\(\)%]/g, "");
-    fileName = fileName.replace(/\s+/g, "_");
+    fileName = fileName.replace(/\s/g, "_");
     return fileName.substring(0, 255);
   }
   async loadField() {
@@ -250,7 +250,7 @@ class Renderer {
     let maindeck = namelist.split("#main")[1].split("#extra")[0].split("\n");
     let extradeck = namelist.split("#extra")[1].split("!side")[0].split("\n");
     for (let i = 0; i < maindeck.length; i++) {
-      if (maindeck[i])
+      if (maindeck[i] && maindeck[i] != "\r")
         await this.screen.addObjectImg(
           `main${i}`,
           this.noimage,
@@ -269,7 +269,7 @@ class Renderer {
         );
     }
     for (let i = 0; i < extradeck.length; i++) {
-      if (extradeck[i])
+      if (extradeck[i] && extradeck[i] != "\r")
         await this.screen.addObjectImg(
           `extra${i}`,
           this.noimage,
