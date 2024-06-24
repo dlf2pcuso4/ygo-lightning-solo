@@ -1,3 +1,5 @@
+//takes input from v1/cardDb.class.js
+//takes input from v1/ygolID.class.js
 class YgolDeck {
   constructor(db, ygolID, isRush) {
     this.db = db;

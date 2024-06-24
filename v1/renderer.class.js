@@ -1,4 +1,5 @@
 //requires v1/screen.class.js
+//requires v1/ygolDeck.class.js
 class Renderer {
   constructor(
     width,
@@ -249,40 +250,42 @@ class Renderer {
     let maindeck = namelist.split("#main")[1].split("#extra")[0].split("\n");
     let extradeck = namelist.split("#extra")[1].split("!side")[0].split("\n");
     for (let i = 0; i < maindeck.length; i++) {
-      await this.screen.addObjectImg(
-        `main${i}`,
-        this.noimage,
-        1134,
-        514,
-        120, //360
-        175, //525
-        {
-          angle: 0,
-          isDraggable: true,
-          cardname: maindeck[i],
-          list: null,
-          isFaceup: false,
-          errorSrc: this.errorimage,
-        }
-      );
+      if (maindeck[i])
+        await this.screen.addObjectImg(
+          `main${i}`,
+          this.noimage,
+          1134,
+          514,
+          120, //360
+          175, //525
+          {
+            angle: 0,
+            isDraggable: true,
+            cardname: maindeck[i],
+            list: null,
+            isFaceup: false,
+            errorSrc: this.errorimage,
+          }
+        );
     }
     for (let i = 0; i < extradeck.length; i++) {
-      await this.screen.addObjectImg(
-        `extra${i}`,
-        this.noimage,
-        26,
-        514,
-        120,
-        175,
-        {
-          angle: 0,
-          isDraggable: true,
-          cardname: extradeck[i],
-          list: null,
-          isFaceup: false,
-          errorSrc: this.errorimage,
-        }
-      );
+      if (extradeck[i])
+        await this.screen.addObjectImg(
+          `extra${i}`,
+          this.noimage,
+          26,
+          514,
+          120,
+          175,
+          {
+            angle: 0,
+            isDraggable: true,
+            cardname: extradeck[i],
+            list: null,
+            isFaceup: false,
+            errorSrc: this.errorimage,
+          }
+        );
     }
     this.originalObjectList = structuredClone(this.screen.objectList);
     this.preloadImages();
@@ -290,6 +293,8 @@ class Renderer {
       if (el.id == "lp-num")
         el.meta.text = maindeck.length < 40 ? "4000" : "8000";
     }
+    let l = this.screen.objectList;
+    console.log({ l });
   }
   loadYld(yld) {
     this.yld = yld;
@@ -361,6 +366,31 @@ class Renderer {
       fontSize: "30pt",
       fontFamily: "Bahnschrift light",
     });
+    this.screen.addObjectText("info-txt1", "#ffffff", 700, 430, 800, {
+      text: "How to use:",
+      fontSize: "15pt",
+      fontFamily: "Bahnschrift light",
+    });
+    this.screen.addObjectText("info-txt2", "#ffffff", 700, 470, 800, {
+      text: "Drag: place cards",
+      fontSize: "15pt",
+      fontFamily: "Bahnschrift light",
+    });
+    this.screen.addObjectText("info-txt3", "#ffffff", 700, 510, 800, {
+      text: "Left click: view deck/extra deck/gy, change battle position",
+      fontSize: "15pt",
+      fontFamily: "Bahnschrift light",
+    });
+    this.screen.addObjectText("info-txt4", "#ffffff", 700, 550, 800, {
+      text: "Left click (hold): check card details",
+      fontSize: "15pt",
+      fontFamily: "Bahnschrift light",
+    });
+    this.screen.addObjectText("info-txt5", "#ffffff", 700, 590, 800, {
+      text: "Right click: flip card, shuffle deck",
+      fontSize: "15pt",
+      fontFamily: "Bahnschrift light",
+    });
   }
   closeMenu() {
     this.screen.removeObject("menu-bg");
@@ -368,6 +398,9 @@ class Renderer {
     this.screen.removeObject("menu-txt-import");
     this.screen.removeObject("menu-btn-reset");
     this.screen.removeObject("menu-txt-reset");
+    for (let i = 1; i < 6; i++) {
+      this.screen.removeObject(`info-txt${i}`);
+    }
   }
   //list depends on mouseupPos
   openCardList() {
@@ -414,10 +447,9 @@ class Renderer {
   }
   flipCard(el) {
     if (el.meta.cardname) {
-      document.getElementById(el.id).src =
-        document.getElementById(el.id).src == this.noimage
-          ? this.url(`cards/${this.name_url(el.meta.cardname)}.jpg`)
-          : this.noimage;
+      document.getElementById(el.id).src = el.meta.isFaceup
+        ? this.noimage
+        : this.url(`cards/${this.name_url(el.meta.cardname)}.jpg`);
       el.meta.isFaceup = el.meta.isFaceup ? false : true;
     }
   }
@@ -562,6 +594,7 @@ class Renderer {
               if (obj.id == this.movingObject && obj.meta.isDraggable) {
                 if (clicked.id == "snapzone-hand") {
                   obj.y = 545;
+                  if (!obj.meta.isFaceup) this.flipCard(obj);
                 } else {
                   obj.x = clicked.x + 30;
                   obj.y = clicked.y;

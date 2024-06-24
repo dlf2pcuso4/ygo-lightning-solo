@@ -11,11 +11,22 @@
     </style>
   </head>
   <body>
-    <ygol
-      dlf2pV2="4Ik--trRMDckZJHGWLEsjKf2fsjR04C2CrAgN2gTWoxqpcuJrZ8XDyRsw58GExjWFyDrgAjwKnIcUydnf4h2lJpWsV7a8lCPQaH_746_F2P%20Sky%20Striker"
-      matsrc="https://i.pinimg.com/736x/5e/c1/dc/5ec1dc3ce877e1483518551d89d1d1c9.jpg"
-      sleevesrc="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGNlpmU6zIMpNy2frjZytdIaGUHXgT0XrZLibcdhPC2g&s"
-    ></ygol>
+    <ygol></ygol>
   </body>
+  <script>
+    const params = new URL(document.location).searchParams;
+    const yld = params.get("yld"); //reads without the yld://
+    if (yld) document.querySelector("ygol").setAttribute("yld", yld);
+    const ydke = params.get("ydke"); //reads without the ydke://
+    if (ydke) document.querySelector("ygol").setAttribute("ydke", ydke);
+    const dlf2pV2 = params.get("dlf2pV2"); //reads without the 2_
+    if (dlf2pV2)
+      document.querySelector("dlf2pV2").setAttribute("dlf2pV2", dlf2pV2);
+    const matsrc = params.get("matsrc");
+    if (matsrc) document.querySelector("ygol").setAttribute("matsrc", matsrc);
+    const sleevesrc = params.get("sleevesrc");
+    if (sleevesrc)
+      document.querySelector("ygol").setAttribute("sleevesrc", sleevesrc);
+  </script>
   <script src="v1/main.js"></script>
 </html>
