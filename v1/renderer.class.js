@@ -304,6 +304,9 @@ class Renderer {
     this.ydk = ydk;
     this.loadDeckFromNamelist(this.ygolDeck.ydk_to_namelist(ydk));
   }
+  loadYdke(ydke) {
+    this.loadYdk(this.ygolDeck.ydke_to_ydk("ydke://" + ydke));
+  }
   loadDlf2pV2(dlf2pV2) {
     this.loadDeckFromNamelist(this.ygolDeck.dlf2pV2_to_namelist(dlf2pV2));
   }

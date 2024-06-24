@@ -9,28 +9,11 @@ async function main() {
   await addScript("v1/ygolDeck.class.js");
   await addScript("v1/screen.class.js");
   await addScript("v1/renderer.class.js");
-  if (!document.querySelector("ygol")) {
-    //full page
-    document.body.insertAdjacentHTML(
-      "beforeend",
-      "<ygol style='width:min-content'></ygol>"
-    );
-    await addCss(`
-    body {
-      background-color: #000000;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }`);
-  } else {
-    //embeded div
-    await addCss(`
+  await addCss(`
     ygol {
       width: 1280px;
       height: 720px;
     }`);
-  }
   let isRush = document.querySelector("ygol").getAttribute("rush");
   const renderer = new Renderer(1280, 720, 60, 30, 0.5, cardDb, ygolID, isRush);
   document.querySelector("ygol").appendChild(renderer.screen.canvas);
@@ -40,6 +23,8 @@ async function main() {
     renderer.loadYld(document.querySelector("ygol").getAttribute("yld"));
   } else if (document.querySelector("ygol").getAttribute("ydk")) {
     renderer.loadYdk(document.querySelector("ygol").getAttribute("ydk"));
+  } else if (document.querySelector("ygol").getAttribute("ydke")) {
+    renderer.loadYdke(document.querySelector("ygol").getAttribute("ydke"));
   } else if (document.querySelector("ygol").getAttribute("dlf2pV2")) {
     renderer.loadDlf2pV2(
       document.querySelector("ygol").getAttribute("dlf2pV2")

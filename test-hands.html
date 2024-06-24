@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Test Hands</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        background-color: #000000;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <ygol style="width: min-content"></ygol>
+  </body>
+  <script src="v1/main.js"></script>
+  <script>
+    const params = new URL(document.location).searchParams;
+    const yld = params.get("yld"); //reads without the yld://
+    if (yld) document.querySelector("ygol").setAttribute("yld", yld);
+    const ydke = params.get("ydke"); //reads without the ydke://
+    if (ydke) document.querySelector("ygol").setAttribute("ydke", ydke);
+    const dlf2pV2 = params.get("dlf2pV2"); //reads without the 2_
+    if (dlf2pV2)
+      document.querySelector("dlf2pV2").setAttribute("dlf2pV2", dlf2pV2);
+    const matsrc = params.get("matsrc");
+    if (matsrc) document.querySelector("ygol").setAttribute("matsrc", matsrc);
+    const sleevesrc = params.get("sleevesrc");
+    if (sleevesrc)
+      document.querySelector("ygol").setAttribute("sleevesrc", sleevesrc);
+  </script>
+</html>

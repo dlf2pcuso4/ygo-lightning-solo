@@ -2,31 +2,131 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>YGO Lightning (Solo)</title>
+    <title>YGO Lightning</title>
     <style>
       * {
         padding: 0;
         margin: 0;
       }
+      body {
+        background-color: #000000;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Bahnschrift light";
+        font-size: 25px;
+        color: rgb(255, 255, 255);
+      }
+      #body {
+        padding: 20px;
+        border-width: 2px;
+        border-color: rgb(94, 60, 179);
+        border-style: solid;
+      }
+      p {
+        margin-top: 15px;
+      }
+      input {
+        padding: 5px;
+        font-size: 25px;
+        font-family: "Bahnschrift light";
+        color: #ffffff;
+        background-color: rgb(32, 24, 52);
+        border: none;
+        width: 300px;
+        margin-right: 10px;
+        margin-top: 10px;
+      }
+      button {
+        width: 200px;
+        height: 50px;
+        background-color: rgb(32, 24, 52);
+        font-family: "Bahnschrift light";
+        font-size: 20px;
+        color: rgb(255, 255, 255);
+        border-width: 4px;
+        border-color: rgb(94, 60, 179);
+        border-style: solid;
+        cursor: pointer;
+        padding: 0px;
+        outline: none;
+        margin-top: 10px;
+      }
+      button:hover {
+        background-color: rgb(94, 60, 179);
+      }
+      select {
+        width: 400px;
+        height: 50px;
+        background-color: rgb(32, 24, 52);
+        font-family: "Bahnschrift light";
+        font-size: 20px;
+        color: rgb(255, 255, 255);
+        border-width: 2px;
+        border-color: #000000;
+        border-style: solid;
+        cursor: pointer;
+      }
     </style>
   </head>
-  <body>
-    <ygol></ygol>
-  </body>
+  <body></body>
   <script>
-    const params = new URL(document.location).searchParams;
-    const yld = params.get("yld"); //reads without the yld://
-    if (yld) document.querySelector("ygol").setAttribute("yld", yld);
-    const ydke = params.get("ydke"); //reads without the ydke://
-    if (ydke) document.querySelector("ygol").setAttribute("ydke", ydke);
-    const dlf2pV2 = params.get("dlf2pV2"); //reads without the 2_
-    if (dlf2pV2)
-      document.querySelector("dlf2pV2").setAttribute("dlf2pV2", dlf2pV2);
-    const matsrc = params.get("matsrc");
-    if (matsrc) document.querySelector("ygol").setAttribute("matsrc", matsrc);
-    const sleevesrc = params.get("sleevesrc");
-    if (sleevesrc)
-      document.querySelector("ygol").setAttribute("sleevesrc", sleevesrc);
+    let indexScreen = `
+    <div id="body">
+      <p>Create a new user profile:</p>
+      <div>
+        <input id="newProfileTxt" type="text" placeholder="Your username..." />
+        <button id="newProfile">Create</button>
+      </div>
+      <p>Or alternatively, paste in your existing profile code:</p>
+      <div>
+        <input id="loadProfileTxt" type="text" placeholder="Your profile code..." />
+        <button id="loadProfile">Load Existing Profile</button>
+      </div>
+    </div>
+    `;
+    let mainScreen = `
+    <div id="body">
+      <p>Logged in as:&nbsp;</p>
+      <button id="changeAccessories">Edit Accessories</button><br />
+      <button id="addDeck">Add Deck</button>
+      <p>Select saved deck:</p>
+      <select id="savedDecks">
+        <option value="">Click to select deck...</option>
+      </select>
+      <br />
+      <button id="useDeck">Use Deck</button><br />
+      <button id="editDeck">Edit Deck</button><br />
+      <button id="deleteDeck">Delete Deck</button>
+    </div>
+    `;
+    let accessoriesScreen = `
+    <div id="body">
+      <p>Edit game mat image:</p>
+      <div>
+        <input id="changeMatTxt" type="text" placeholder="Image url..." />
+        <button id="changeMat">Save</button>
+      </div>
+      <p>Edit sleeve image:</p>
+      <div>
+        <input id="changeSleeveTxt" type="text" placeholder="Image url..." />
+        <button id="changeSleeve">Save</button>
+      </div>
+    </div>
+    `;
+    let addDeckScreen = `
+    <div id="body">
+      <p>Deck name:</p>
+      <input id="deckNameTxt" type="text" placeholder="Deck name..." />
+      <p>Deck code (ydk/ydke/yld):</p>
+      <input id="deckCodeTxt" type="text" placeholder="Deck code..." /><br />
+      <button id="saveDeck">Save</button>
+    </div>
+    `;
+    document.body.innerHTML = indexScreen;
+    document.getElementById("newProfile").onclick = () => {
+      alert("Website under construction, check back later...");
+    };
   </script>
-  <script src="v1/main.js"></script>
 </html>
