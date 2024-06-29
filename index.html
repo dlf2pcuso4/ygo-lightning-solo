@@ -38,6 +38,19 @@
         margin-right: 10px;
         margin-top: 10px;
       }
+      textarea {
+        padding: 5px;
+        font-size: 25px;
+        font-family: "Bahnschrift light";
+        color: #ffffff;
+        background-color: rgb(32, 24, 52);
+        border: none;
+        width: 300px;
+        height: 200px;
+        margin-right: 10px;
+        margin-top: 10px;
+        resize: none;
+      }
       button {
         width: 200px;
         height: 50px;
@@ -128,7 +141,7 @@
       <p>Deck name:</p>
       <input id="deckName" type="text" placeholder="Deck name..." />
       <p>Deck code (ydk/ydke/yld):</p>
-      <input id="deckCode" type="text" placeholder="Deck code..." /><br />
+      <textarea id="deckCode" type="text" placeholder="Deck code..."></textarea><br />
       <button onclick="saveDeck()">Save</button>
       <button onclick="openMain()">Back</button>
     </div>
@@ -199,7 +212,18 @@
       );
     }
     function editDeck() {
-      alert("Development in progress, check again after some time...");
+      //temporarily copies the ydke of the deck
+      let input = document.createElement("textarea");
+      input.innerHTML = ygolDeck.convert(
+        "yld://" + document.getElementById("savedDecks").value,
+        "ydke"
+      );
+      document.body.appendChild(input);
+      input.select();
+      let result = document.execCommand("copy");
+      document.body.removeChild(input);
+      if (result)
+        alert("Development in progress, check again after some time...");
     }
     function deleteDeck() {
       profile.decks = profile.decks.filter(
