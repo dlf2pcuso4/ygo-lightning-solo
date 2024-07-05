@@ -31,7 +31,8 @@
     function createYgolIDList() {
       let json = [];
       for (let el of jsonResponseDl) {
-        if (json.indexOf(el.name) == -1) json.push(el.name);
+        let name = el.rush ? el.name + " [RUSH]" : el.name;
+        if (json.indexOf(name) == -1) json.push(name);
       }
       download(`let ygolID = ${JSON.stringify(json)};`, "ygolID.js");
     }
@@ -45,8 +46,83 @@
     function downloadCardDb() {
       download(`let cardDb = ${JSON.stringify(jsonResponseDl)};`, "cardDb.js");
     }
+    function updateYgolDb() {
+      let json = structuredClone(ygolID);
+      for (let el of jsonResponseDl) {
+        let name = el.rush ? el.name + " [RUSH]" : el.name;
+        if (json.indexOf(name) == -1) json.push(name);
+      }
+      download(`let ygolID = ${JSON.stringify(json)};`, "ygolID.js");
+      let db = [];
+      let count = 0;
+      for (let name of json) {
+        let el = jsonResponseDl.filter(
+          (a) =>
+            a.name == name.replace(" [RUSH]", "") &&
+            (name.includes(" [RUSH]") ? a.rush : !a.rush)
+        )[0];
+        console.log({ el });
+        delete el._id;
+        if (el.rush) el.name += " [RUSH]";
+        el.ygolID = count + "";
+        let prio = 1000000000;
+        let levellink =
+          (99 -
+            (el.level ? el.level : 0) -
+            (el.linkRating ? el.linkRating : 0)) %
+          99;
+        if (el.monsterType.includes("Fusion")) {
+          prio = 5000000000;
+        } else if (el.monsterType.includes("Synchro")) {
+          prio = 4000000000;
+        } else if (
+          el.monsterType.includes("Xyz") ||
+          el.monsterType.includes("XYZ")
+        ) {
+          prio = 3000000000;
+        } else if (el.monsterType.includes("Link")) {
+          prio = 2000000000;
+        }
+        if (el.type == "Monster" && el.monsterType) {
+          if (el.monsterType.includes("Ritual")) {
+            prio += 300000000 + levellink * 100000;
+          } else if (el.monsterType.includes("Normal")) {
+            prio += 500000000 + levellink * 100000;
+          } else {
+            prio += 400000000 + levellink * 100000;
+          }
+        } else if (el.type == "Spell" && el.race) {
+          if (el.race.includes("Normal")) {
+            prio += 200600000;
+          } else if (el.race.includes("Equip")) {
+            prio += 200500000;
+          } else if (el.race.includes("Field")) {
+            prio += 200400000;
+          } else if (el.race.includes("Ritual")) {
+            prio += 200300000;
+          } else if (el.race.includes("Continuous")) {
+            prio += 200200000;
+          } else if (el.race.includes("Quick-Play")) {
+            prio += 200100000;
+          }
+        } else if (el.type == "Trap" && el.race) {
+          if (el.race.includes("Normal")) {
+            prio += 100300000;
+          } else if (el.race.includes("Counter")) {
+            prio += 100200000;
+          } else if (el.race.includes("Continuous")) {
+            prio += 100100000;
+          }
+        }
+        prio += Number(el.ygolID);
+        el.prioity = prio;
+        db.push(el);
+        count++;
+      }
+      download(`let cardDb = ${JSON.stringify(db)};`, "ygolDb.js");
+    }
     let ygolDeck = new YgolDeck(cardDb, ygolID);
-    //updateYgolIDList();
-    //downloadCardDb();
+    //createYgolIDList();
+    updateYgolDb();
   </script>
 </html>

@@ -2,9 +2,8 @@
 //cardSearcher
 //deckBuilder
 //deckBuilderGUI
-//profile
 async function main() {
-  await addScript("v1/cardDb.js");
+  await addScript("v1/ygolDb.js");
   await addScript("v1/ygolID.js");
   await addScript("v1/ygolDeck.class.js");
   await addScript("v1/screen.class.js");
