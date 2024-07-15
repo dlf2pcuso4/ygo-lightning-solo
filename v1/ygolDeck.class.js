@@ -131,19 +131,21 @@ class YgolDeck {
       );
     for (let i = 0; i < arr.length; i++) {
       if (!isNaN(arr[i]) && arr[i][0] != "#" && arr[i][0] != "!") {
+        console.log(arr[i]);
         let card = this.db.filter((a) => a.konamiID == Number(arr[i]));
         if (card.length) {
           arr[i] = card[0].name;
         } else {
-          arr[i] = this.db.filter(
+          card = this.db.filter(
             (a) =>
               a.konamiID == Number(arr[i]) + 1 ||
               a.konamiID == Number(arr[i]) - 1
-          )[0].name;
+          );
+          arr[i] = card.length ? card[0].name : "";
         }
       }
     }
-    return arr.join("\n");
+    return arr.filter((a) => a != "").join("\n");
   }
   namelist_to_ydk(namelist) {
     let arr = namelist.split("\n");

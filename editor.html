@@ -132,7 +132,8 @@
             autocomplete="off"
           />
           <div id="searchResult" class="purple"></div>
-          <button onclick="sortDeck()">Sort (Master Duel)</button><br />
+          <button onclick="sortDeck()">Sort (Master Duel)</button>
+          <button onclick="testHands()">Test Hands</button><br />
           <button onclick="saveDeck()">Save and Exit</button>
           <button onclick="exit()">Exit</button>
         </div>
@@ -176,14 +177,28 @@
     function sortDeck() {
       deckBuilder.sortDeck(main, extra, cardwidth);
     }
-    function saveDeck() {
+    function testHands() {
       let namelist = deckBuilder.exportNamelist();
-      console.log(namelist);
+      let yld = "";
       for (let el of profile.decks) {
         if (el.name == originalDeckName) {
           el.name = document.getElementById("deckName").value;
           el.yld = ygolDeck.namelist_to_yld(namelist).replace("yld://", "");
-          console.log(el);
+          yld = el.yld;
+        }
+      }
+      window.open(
+        `test-hands.html?yld=${yld}&matsrc=${encodeURIComponent(
+          profile.mat
+        )}&sleevesrc=${encodeURIComponent(profile.sleeve)}`
+      );
+    }
+    function saveDeck() {
+      let namelist = deckBuilder.exportNamelist();
+      for (let el of profile.decks) {
+        if (el.name == originalDeckName) {
+          el.name = document.getElementById("deckName").value;
+          el.yld = ygolDeck.namelist_to_yld(namelist).replace("yld://", "");
         }
       }
       window.open(
