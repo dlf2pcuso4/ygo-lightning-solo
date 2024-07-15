@@ -93,12 +93,12 @@
     <div id="body">
       <p>Create a new user profile:</p>
       <div>
-        <input id="newProfile" type="text" placeholder="Your username..." />
+        <input id="newProfile" type="text" placeholder="Your username..." autocomplete="off"/>
         <button onclick="newProfile()">Create</button>
       </div>
       <p>Or alternatively, paste in your existing profile code:</p>
       <div>
-        <input id="loadProfile" type="text" placeholder="Your profile code..." />
+        <input id="loadProfile" type="text" placeholder="Your profile code..." autocomplete="off"/>
         <button onclick="loadProfile()">Load User Data</button>
       </div>
     </div>
@@ -125,12 +125,12 @@
     <div id="body">
       <p>Edit game mat image:</p>
       <div>
-        <input id="changeMat" type="text" placeholder="Image url..." />
+        <input id="changeMat" type="text" placeholder="Image url..." autocomplete="off"/>
         <button onclick="changeMat()">Save</button>
       </div>
       <p>Edit sleeve image:</p>
       <div>
-        <input id="changeSleeve" type="text" placeholder="Image url..." />
+        <input id="changeSleeve" type="text" placeholder="Image url..." autocomplete="off"/>
         <button onclick="changeSleeve()">Save</button>
       </div>
       <button onclick="openMain()">Back</button>
@@ -139,9 +139,9 @@
     let addDeckScreen = `
     <div id="body">
       <p>Deck name:</p>
-      <input id="deckName" type="text" placeholder="Deck name..." />
+      <input id="deckName" type="text" placeholder="Deck name..." autocomplete="off"/>
       <p>Deck code (ydk/ydke/yld):</p>
-      <textarea id="deckCode" type="text" placeholder="Deck code..."></textarea><br />
+      <textarea id="deckCode" type="text" placeholder="Deck code (leave blank for new deck)"></textarea><br />
       <button onclick="saveDeck()">Save</button>
       <button onclick="openMain()">Back</button>
     </div>
@@ -187,14 +187,22 @@
             (a) => a.name == document.getElementById("deckName").value
           ).length == 0
         ) {
+          let yld = "";
+          if (document.getElementById("deckCode").value)
+            yld = ygolDeck
+              .convert(document.getElementById("deckCode").value, "yld")
+              .replace("yld://", "");
           profile.decks.push({
             name: document.getElementById("deckName").value,
-            yld: ygolDeck
-              .convert(document.getElementById("deckCode").value, "yld")
-              .replace("yld://", ""),
+            yld: yld,
             rush: false,
           });
-          openMain();
+          window.open(
+            `editor.html?yld=${yld}&p=${encodeURIComponent(
+              profile.createURL()
+            )}`,
+            "_self"
+          );
         } else {
           alert("Deck name must be unique from existing decks.");
         }
@@ -212,18 +220,12 @@
       );
     }
     function editDeck() {
-      //temporarily copies the ydke of the deck
-      let input = document.createElement("textarea");
-      input.innerHTML = ygolDeck.convert(
-        "yld://" + document.getElementById("savedDecks").value,
-        "ydke"
+      window.open(
+        `editor.html?yld=${
+          document.getElementById("savedDecks").value
+        }&p=${encodeURIComponent(profile.createURL())}`,
+        "_self"
       );
-      document.body.appendChild(input);
-      input.select();
-      let result = document.execCommand("copy");
-      document.body.removeChild(input);
-      if (result)
-        alert("Development in progress, check again after some time...");
     }
     function deleteDeck() {
       profile.decks = profile.decks.filter(

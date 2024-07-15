@@ -131,7 +131,16 @@ class YgolDeck {
       );
     for (let i = 0; i < arr.length; i++) {
       if (!isNaN(arr[i]) && arr[i][0] != "#" && arr[i][0] != "!") {
-        arr[i] = this.db.filter((a) => a.konamiID == Number(arr[i]))[0].name;
+        let card = this.db.filter((a) => a.konamiID == Number(arr[i]));
+        if (card.length) {
+          arr[i] = card[0].name;
+        } else {
+          arr[i] = this.db.filter(
+            (a) =>
+              a.konamiID == Number(arr[i]) + 1 ||
+              a.konamiID == Number(arr[i]) - 1
+          )[0].name;
+        }
       }
     }
     return arr.join("\n");
