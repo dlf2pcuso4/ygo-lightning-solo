@@ -21,13 +21,19 @@ class DeckBuilder {
   }
   appendCards(arrNames, targetDiv, width) {
     for (let el of arrNames) {
+      console.log({ el });
+      let altSrc = this.errorimage;
+      if (el.konamiID)
+        altSrc = `https://images.ygoprodeck.com/images/cards/${el.konamiID}.jpg`;
       targetDiv.insertAdjacentHTML(
         "beforeend",
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
           el.name
         }" style="width:${width}px;" onclick="cardClicked('${targetDiv.id}','${
           el.name
-        }')" onerror="this.onerror=null; this.src='${this.errorimage}';" >`
+        }')" onerror="if(this.src=='${altSrc}'){this.onerror=null; this.src='${
+          this.errorimage
+        }';}else{this.src='${altSrc}'}" >`
       );
     }
   }

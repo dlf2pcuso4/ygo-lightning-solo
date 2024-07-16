@@ -45,12 +45,16 @@ class Screen {
       i.src = src;
       i.onload = resolve;
       i.onerror = () => {
-        if (meta.errorSrc)
-          if (i.src == meta.errorSrc) {
-            reject;
-          } else {
-            i.src = meta.errorSrc;
-          }
+        if (i.src == meta.altSrc) {
+          i.src = meta.errorSrc;
+        } else if (i.src == meta.errorSrc) {
+          i.onerror = null;
+          reject;
+        } else if (meta.altSrc) {
+          i.src = meta.altSrc;
+        } else {
+          i.src = meta.errorSrc;
+        }
       };
       document.getElementById("ygol-cnv-images").appendChild(i);
     });

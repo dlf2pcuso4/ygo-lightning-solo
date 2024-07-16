@@ -178,7 +178,11 @@ class Renderer {
             0,
             0,
             360,
-            525
+            525,
+            {
+              altSrc: `https://images.ygoprodeck.com/images/cards/${card.konamiID}.jpg`,
+              errorSrc: this.errorimage,
+            }
           );
           this.screen.addObjectText("popup-txt", "#ffffff", 400, 30, 800, {
             text: card.description,
@@ -250,7 +254,9 @@ class Renderer {
     let maindeck = namelist.split("#main")[1].split("#extra")[0].split("\n");
     let extradeck = namelist.split("#extra")[1].split("!side")[0].split("\n");
     for (let i = 0; i < maindeck.length; i++) {
-      if (maindeck[i] && maindeck[i] != "\r")
+      if (maindeck[i] && maindeck[i] != "\r") {
+        let konamiID = this.ygolDeck.db.filter((a) => a.name == maindeck[i])[0]
+          .konamiID;
         await this.screen.addObjectImg(
           `main${i}`,
           this.noimage,
@@ -264,12 +270,16 @@ class Renderer {
             cardname: maindeck[i],
             list: null,
             isFaceup: false,
+            altSrc: `https://images.ygoprodeck.com/images/cards/${konamiID}.jpg`,
             errorSrc: this.errorimage,
           }
         );
+      }
     }
     for (let i = 0; i < extradeck.length; i++) {
-      if (extradeck[i] && extradeck[i] != "\r")
+      if (extradeck[i] && extradeck[i] != "\r") {
+        let konamiID = this.ygolDeck.db.filter((a) => a.name == extradeck[i])[0]
+          .konamiID;
         await this.screen.addObjectImg(
           `extra${i}`,
           this.noimage,
@@ -283,9 +293,11 @@ class Renderer {
             cardname: extradeck[i],
             list: null,
             isFaceup: false,
+            altSrc: `https://images.ygoprodeck.com/images/cards/${konamiID}.jpg`,
             errorSrc: this.errorimage,
           }
         );
+      }
     }
     this.originalObjectList = structuredClone(this.screen.objectList);
     this.preloadImages();
