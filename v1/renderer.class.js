@@ -257,6 +257,7 @@ class Renderer {
       if (maindeck[i] && maindeck[i] != "\r") {
         let konamiID = this.ygolDeck.db.filter((a) => a.name == maindeck[i])[0]
           .konamiID;
+        if (konamiID == "") konamiID = "error";
         await this.screen.addObjectImg(
           `main${i}`,
           this.noimage,
@@ -280,6 +281,7 @@ class Renderer {
       if (extradeck[i] && extradeck[i] != "\r") {
         let konamiID = this.ygolDeck.db.filter((a) => a.name == extradeck[i])[0]
           .konamiID;
+        if (konamiID == "") konamiID = "error";
         await this.screen.addObjectImg(
           `extra${i}`,
           this.noimage,
