@@ -21,7 +21,6 @@ class DeckBuilder {
   }
   appendCards(arrNames, targetDiv, width) {
     for (let el of arrNames) {
-      console.log({ el });
       let altSrc = this.errorimage;
       if (el.konamiID)
         altSrc = `https://images.ygoprodeck.com/images/cards/${el.konamiID}.jpg`;
@@ -29,11 +28,13 @@ class DeckBuilder {
         "beforeend",
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
           el.name
-        }" style="width:${width}px;" onclick="cardClicked('${targetDiv.id}','${
+        }" style="width:${width}px;" onmousedown="cardClicked(\`${
+          targetDiv.id
+        }\`,\`${
           el.name
-        }')" onerror="if(this.src=='${altSrc}'){this.onerror=null; this.src='${
+        }\`)" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
           this.errorimage
-        }';}else{this.src='${altSrc}'}" >`
+        }\`;}else{this.src=\`${altSrc}\`}" >`
       );
     }
   }
@@ -61,6 +62,25 @@ class DeckBuilder {
   sortDeck(mainDiv, extraDiv, width) {
     this.cards.sort((a, b) => b.priority - a.priority);
     this.appendDeck(mainDiv, extraDiv, width);
+  }
+  displayCard(name, targetDiv, width) {
+    let cardObj = this.ygolDb.filter((a) => a.name == name)[0];
+    let altSrc = this.errorimage;
+    if (cardObj.konamiID)
+      altSrc = `https://images.ygoprodeck.com/images/cards/${cardObj.konamiID}.jpg`;
+    targetDiv.innerHTML = "";
+    targetDiv.insertAdjacentHTML(
+      "beforeend",
+      `<div style="display: flex; justify-content: center">
+        <img src="${this.url(
+          `cards/${this.name_url(name)}.jpg`
+        )}" alt="${name}" style="width:${width}px;" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
+        this.errorimage
+      }\`;}else{this.src=\`${altSrc}\`}" >
+      </div>
+      <p class="cardname">${cardObj.name}</p>
+      <p>${cardObj.description}</p>`
+    );
   }
   searchCard(name, targetDiv, width, criteria = [], sort = "", limit = 300) {
     //criteria being an array of objects with criteria and value

@@ -107,9 +107,44 @@
         height: 400px;
         overflow-y: scroll;
       }
+      #popupCss1 {
+        width: 100vw;
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+        z-index: 9999;
+        position: fixed;
+        display: none;
+        justify-content: center;
+      }
+      #popupCss2 {
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      #popup {
+        width: 800px;
+        min-height: 600px;
+        background-color: #000000dd;
+        padding: 20px;
+        justify-content: center;
+        font-size: 15px;
+      }
+      .cardname {
+        font-size: 20px;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
+    <div id="popupCss1">
+      <div id="popupCss2">
+        <div id="popup"></div>
+      </div>
+    </div>
     <div id="body">
       <div id="deck">
         <div id="main" class="purple"></div>
@@ -155,13 +190,49 @@
     let ygolDeck = new YgolDeck(cardDb, ygolID, false);
     let deckBuilder = new DeckBuilder(cardDb);
     let originalDeckName = "";
+    let currentCard = "";
+    let cardDivId = "";
+    let mousedown = false;
+    let mousehold = false;
+    let poppingup = false;
+    let holdThreshold = 500;
+
+    document.addEventListener("mousedown", (event) => {
+      mousedown = true;
+      setTimeout(() => {
+        if (mousedown) mousehold = true;
+      }, holdThreshold);
+    });
+    document.addEventListener("mouseup", (event) => {
+      if (!mousehold) {
+        if (cardDivId == "main" || cardDivId == "extra") {
+          deckBuilder.removeCard(currentCard, main, extra, cardwidth);
+        } else if (cardDivId == "searchResult") {
+          deckBuilder.addCard(currentCard, main, extra, cardwidth);
+        }
+      }
+      mousedown = false;
+      mousehold = false;
+      poppingup = false;
+      currentCard = "";
+      cardDivId = "";
+      document.getElementById("popupCss1").style.display = "none";
+    });
+    setInterval(() => {
+      if (mousehold && currentCard && !poppingup) {
+        poppingup = true;
+        document.getElementById("popupCss1").style.display = "flex";
+        deckBuilder.displayCard(
+          currentCard,
+          document.getElementById("popup"),
+          160
+        );
+      }
+    }, 100);
 
     function cardClicked(divid, cardname) {
-      if (divid == "main" || divid == "extra") {
-        deckBuilder.removeCard(cardname, main, extra, cardwidth);
-      } else if (divid == "searchResult") {
-        deckBuilder.addCard(cardname, main, extra, cardwidth);
-      }
+      currentCard = cardname;
+      cardDivId = divid;
     }
     function cardSearch() {
       let input = document.getElementById("searchInput").value;
