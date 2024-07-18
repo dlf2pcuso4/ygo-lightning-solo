@@ -1,9 +1,11 @@
 //takes input from v1/ygolDb.class.js
 class DeckBuilder {
-  constructor(ygolDb, name = "Untitiled Deck", cards = []) {
+  constructor(ygolDb, name = "Untitiled Deck", cards = [], side = []) {
     this.ygolDb = ygolDb;
     this.name = name;
     this.cards = cards; //card objects from ygolID
+    this.side = side;
+    this.editingDeck = "main";
     this.errorimage = this.url("v1/errorimage.jpg");
   }
   url(url) {
@@ -18,6 +20,17 @@ class DeckBuilder {
   }
   renameDeck(name) {
     this.name = name;
+  }
+  switchEditingDeck(mainDiv, extraDiv, width) {
+    if (this.editingDeck == "main") {
+      this.editingDeck = "side";
+      this.appendSide(mainDiv, extraDiv, width);
+      return `View Main Deck`;
+    } else {
+      this.editingDeck = "main";
+      this.appendDeck(mainDiv, extraDiv, width);
+      return `View Side Deck`;
+    }
   }
   appendCards(arrNames, targetDiv, width) {
     for (let el of arrNames) {
@@ -46,22 +59,35 @@ class DeckBuilder {
     this.appendCards(main, mainDiv, width);
     this.appendCards(extra, extraDiv, width);
   }
+  appendSide(mainDiv, extraDiv, width) {
+    mainDiv.innerHTML = "";
+    extraDiv.innerHTML = "";
+    this.appendCards(this.side, mainDiv, width);
+  }
   importNamelist(namelist, mainDiv, extraDiv, width) {
     for (let line of namelist.split("\n")) {
+      if (line.includes("!side"))
+        this.switchEditingDeck(mainDiv, extraDiv, width);
       if (
         !line.includes("#main") &&
         !line.includes("#extra") &&
         !line.includes("!side") &&
         line.length
       ) {
-        //handle side deck
         this.addCard(line, mainDiv, extraDiv, width);
       }
     }
+    if (this.editingDeck == "side")
+      this.switchEditingDeck(mainDiv, extraDiv, width);
   }
   sortDeck(mainDiv, extraDiv, width) {
-    this.cards.sort((a, b) => b.priority - a.priority);
-    this.appendDeck(mainDiv, extraDiv, width);
+    if (this.editingDeck == "main") {
+      this.cards.sort((a, b) => b.priority - a.priority);
+      this.appendDeck(mainDiv, extraDiv, width);
+    } else {
+      this.side.sort((a, b) => b.priority - a.priority);
+      this.appendSide(mainDiv, extraDiv, width);
+    }
   }
   displayCard(name, targetDiv, width) {
     let cardObj = this.ygolDb.filter((a) => a.name == name)[0];
@@ -94,19 +120,33 @@ class DeckBuilder {
     this.appendCards(filtered, targetDiv, width);
   }
   addCard(name, mainDiv, extraDiv, width) {
-    this.cards.push(this.ygolDb.filter((a) => a.name == name)[0]);
-    this.appendDeck(mainDiv, extraDiv, width);
+    if (this.editingDeck == "main") {
+      this.cards.push(this.ygolDb.filter((a) => a.name == name)[0]);
+      this.appendDeck(mainDiv, extraDiv, width);
+    } else {
+      this.side.push(this.ygolDb.filter((a) => a.name == name)[0]);
+      this.appendSide(mainDiv, extraDiv, width);
+    }
   }
   removeCard(name, mainDiv, extraDiv, width) {
-    this.cards.splice(
-      this.cards.indexOf(this.ygolDb.filter((a) => a.name == name)[0]),
-      1
-    );
-    this.appendDeck(mainDiv, extraDiv, width);
+    if (this.editingDeck == "main") {
+      this.cards.splice(
+        this.cards.indexOf(this.ygolDb.filter((a) => a.name == name)[0]),
+        1
+      );
+      this.appendDeck(mainDiv, extraDiv, width);
+    } else {
+      this.side.splice(
+        this.side.indexOf(this.ygolDb.filter((a) => a.name == name)[0]),
+        1
+      );
+      this.appendSide(mainDiv, extraDiv, width);
+    }
   }
   exportNamelist() {
     let main = "#main\n";
     let extra = "#extra\n";
+    let side = "!side\n";
     for (let el of this.cards) {
       if (el.priority < 2000000000) {
         main += el.name + "\n";
@@ -114,7 +154,9 @@ class DeckBuilder {
         extra += el.name + "\n";
       }
     }
-    //needs adding side
-    return main + extra + "!side\n";
+    for (let el of this.side) {
+      side += el.name + "\n";
+    }
+    return main + extra + side;
   }
 }

@@ -118,30 +118,25 @@ class YgolDeck {
       .join("\n");
   }
   ydk_to_namelist(ydk) {
-    if (!ydk.split("\n").filter((a) => !isNaN(a)).length) return ydk;
-    let arr = ydk
-      .split("\n")
-      .filter(
-        (a) =>
-          a != "" &&
-          (!isNaN(a) ||
-            a.includes("#main") ||
-            a.includes("#extra") ||
-            a.includes("!side"))
-      );
+    let arr = ydk.split("\n").filter((a) => a != "");
     for (let i = 0; i < arr.length; i++) {
-      if (!isNaN(arr[i]) && arr[i][0] != "#" && arr[i][0] != "!") {
-        console.log(arr[i]);
-        let card = this.db.filter((a) => a.konamiID == Number(arr[i]));
-        if (card.length) {
-          arr[i] = card[0].name;
+      if (arr[i][0] != "#" && arr[i][0] != "!") {
+        if (isNaN(arr[i])) {
+          console.log(ydk);
+          return ydk;
         } else {
-          card = this.db.filter(
-            (a) =>
-              a.konamiID == Number(arr[i]) + 1 ||
-              a.konamiID == Number(arr[i]) - 1
-          );
-          arr[i] = card.length ? card[0].name : "";
+          console.log(arr[i]);
+          let card = this.db.filter((a) => a.konamiID == Number(arr[i]));
+          if (card.length) {
+            arr[i] = card[0].name;
+          } else {
+            card = this.db.filter(
+              (a) =>
+                a.konamiID == Number(arr[i]) + 1 ||
+                a.konamiID == Number(arr[i]) - 1
+            );
+            arr[i] = card.length ? card[0].name : "";
+          }
         }
       }
     }

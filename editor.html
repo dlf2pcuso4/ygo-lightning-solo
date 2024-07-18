@@ -72,10 +72,16 @@
         cursor: pointer;
         padding: 0px;
         outline: none;
-        margin-top: 10px;
+        margin-bottom: 10px;
       }
       button:hover {
         background-color: rgb(94, 60, 179);
+      }
+      .minibtn {
+        width: 150px;
+        height: 40px;
+        font-size: 15px;
+        border-width: 3px;
       }
       select {
         width: 400px;
@@ -90,22 +96,23 @@
         cursor: pointer;
       }
       #main {
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         padding: 10px;
-        width: 720px;
-        height: 430px;
+        width: 665px;
+        height: 400px;
         overflow-y: scroll;
       }
       #extra {
         padding: 10px;
-        width: 720px;
-        height: 200px;
+        width: 665px;
+        height: 190px;
         overflow-y: scroll;
       }
       #searchResult {
-        width: 460px;
+        width: 415px;
         height: 400px;
         overflow-y: scroll;
+        margin-bottom: 10px;
       }
       #popupCss1 {
         width: 100vw;
@@ -147,31 +154,33 @@
     </div>
     <div id="body">
       <div id="deck">
+        <button class="minibtn" onclick="sortDeck()">Sort (Master Duel)</button>
+        <button id="switchMainSide" class="minibtn" onclick="switchMainSide()">
+          View Side Deck</button
+        ><br />
         <div id="main" class="purple"></div>
         <div id="extra" class="purple"></div>
       </div>
       <div>
-        <div>
-          <input
-            id="deckName"
-            value="Untitled Deck"
-            type="text"
-            placeholder="Deck name..."
-            autocomplete="off"
-          /><br />
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="Search card..."
-            onkeyup="cardSearch()"
-            autocomplete="off"
-          />
-          <div id="searchResult" class="purple"></div>
-          <button onclick="sortDeck()">Sort (Master Duel)</button>
-          <button onclick="testHands()">Test Hands</button><br />
-          <button onclick="saveDeck()">Save and Exit</button>
-          <button onclick="exit()">Exit</button>
-        </div>
+        <input
+          id="deckName"
+          value="Untitled Deck"
+          type="text"
+          placeholder="Deck name..."
+          autocomplete="off"
+        /><br />
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search card..."
+          onkeyup="cardSearch()"
+          autocomplete="off"
+        />
+        <div id="searchResult" class="purple"></div>
+        <button onclick="testHands()">Test Hands</button>
+        <button id="copyYdke" onclick="copyYdke()">Copy ydke</button><br />
+        <button onclick="saveDeck()">Save and Exit</button>
+        <button onclick="exit()">Exit</button>
       </div>
     </div>
   </body>
@@ -182,7 +191,7 @@
   <script src="v1/deckBuilder.class.js"></script>
   <script>
     //hold click to view card
-    let cardwidth = 70;
+    let cardwidth = 65;
     let main = document.getElementById("main");
     let extra = document.getElementById("extra");
     let searchResult = document.getElementById("searchResult");
@@ -245,6 +254,10 @@
         }
       }, 500);
     }
+    function switchMainSide() {
+      document.getElementById("switchMainSide").innerHTML =
+        deckBuilder.switchEditingDeck(main, extra, cardwidth);
+    }
     function sortDeck() {
       deckBuilder.sortDeck(main, extra, cardwidth);
     }
@@ -264,12 +277,26 @@
         )}&sleevesrc=${encodeURIComponent(profile.sleeve)}`
       );
     }
+    function copyYdke() {
+      let input = document.createElement("textarea");
+      input.innerHTML = ygolDeck.convert(deckBuilder.exportNamelist(), "ydke");
+      document.body.appendChild(input);
+      input.select();
+      if (document.execCommand("copy")) {
+        document.body.removeChild(input);
+        document.getElementById("copyYdke").innerHTML = "Copied!";
+        setTimeout(() => {
+          document.getElementById("copyYdke").innerHTML = "Copy ydke";
+        }, 2000);
+      }
+    }
     function saveDeck() {
-      let namelist = deckBuilder.exportNamelist();
       for (let el of profile.decks) {
         if (el.name == originalDeckName) {
           el.name = document.getElementById("deckName").value;
-          el.yld = ygolDeck.namelist_to_yld(namelist).replace("yld://", "");
+          el.yld = ygolDeck
+            .convert(deckBuilder.exportNamelist(), "yld")
+            .replace("yld://", "");
         }
       }
       window.open(
