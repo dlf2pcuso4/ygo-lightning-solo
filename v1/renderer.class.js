@@ -145,12 +145,12 @@ class Renderer {
     this.screen.addObjectText("lp-txt", "#ffffff", 20, 100, 800, {
       text: "LP:",
       fontSize: "40pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectText("lp-num", "#ffffff", 100, 100, 800, {
       text: "8000",
       fontSize: "40pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     await this.screen.addObjectImg(
       "dice",
@@ -187,7 +187,7 @@ class Renderer {
           this.screen.addObjectText("popup-txt", "#ffffff", 400, 30, 800, {
             text: card.description,
             fontSize: "20pt",
-            fontFamily: "Bahnschrift light",
+            fontFamily: "Bahnschrift",
           });
         }
       } else {
@@ -368,7 +368,7 @@ class Renderer {
     this.screen.addObjectText("menu-txt-import", "#ffffff", 20, 100, 1000, {
       text: "Import deck from clipboard",
       fontSize: "30pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectRect(
       "menu-btn-reset",
@@ -381,32 +381,32 @@ class Renderer {
     this.screen.addObjectText("menu-txt-reset", "#ffffff", 20, 180, 1000, {
       text: "Reset field",
       fontSize: "30pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectText("info-txt1", "#ffffff", 700, 430, 800, {
       text: "How to use:",
       fontSize: "15pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectText("info-txt2", "#ffffff", 700, 470, 800, {
       text: "Drag: place cards",
       fontSize: "15pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectText("info-txt3", "#ffffff", 700, 510, 800, {
       text: "Left click: view deck/extra deck/gy, change battle position",
       fontSize: "15pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectText("info-txt4", "#ffffff", 700, 550, 800, {
       text: "Left click (hold): check card details",
       fontSize: "15pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
     this.screen.addObjectText("info-txt5", "#ffffff", 700, 590, 800, {
       text: "Right click: flip card, shuffle deck",
       fontSize: "15pt",
-      fontFamily: "Bahnschrift light",
+      fontFamily: "Bahnschrift",
     });
   }
   closeMenu() {
