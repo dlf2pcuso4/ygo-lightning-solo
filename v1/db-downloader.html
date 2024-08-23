@@ -12,6 +12,7 @@
   </head>
   <body></body>
   <script src="https://dlf2p.com/lib/carddb-dl.js"></script>
+  <script src="https://dlf2p.com/lib/carddb-md.js"></script>
   <script src="cardDb (old).js"></script>
   <script src="ygolID.js"></script>
   <script src="ygolDeck.class.js"></script>
@@ -46,14 +47,110 @@
     function downloadCardDb() {
       download(`let cardDb = ${JSON.stringify(jsonResponseDl)};`, "cardDb.js");
     }
+    function prioDl(el) {
+      let prio = 1000000000;
+      let levellink = el.level ? el.level : el.linkRating;
+      if (el.monsterType.includes("Fusion")) {
+        prio = 5000000000;
+      } else if (el.monsterType.includes("Synchro")) {
+        prio = 4000000000;
+      } else if (
+        el.monsterType.includes("Xyz") ||
+        el.monsterType.includes("XYZ")
+      ) {
+        prio = 3000000000;
+      } else if (el.monsterType.includes("Link")) {
+        prio = 2000000000;
+      }
+      if (el.rarity == "UR") {
+        prio += 40000000;
+      } else if (el.rarity == "SR") {
+        prio += 30000000;
+      } else if (el.rarity == "R") {
+        prio += 20000000;
+      } else if (el.rarity == "N") {
+        prio += 10000000;
+      }
+      if (el.type.includes("Monster")) {
+        if (el.monsterType.includes("Ritual")) {
+          prio += 500000000 + levellink * 100000;
+        } else if (el.monsterType.includes("Normal")) {
+          prio += 300000000 + levellink * 100000;
+        } else {
+          prio += 400000000 + levellink * 100000;
+        }
+      } else if (el.type.includes("Spell")) {
+        prio += 200000000;
+      } else if (el.type.includes("Trap")) {
+        prio += 100000000;
+      }
+      prio += Number(el.ygolID);
+      return prio;
+    }
+    function prioMd(el) {
+      let prio = 1000000000;
+      let levellink =
+        (99 - (el.level ? el.level : 0) - (el.linkRating ? el.linkRating : 0)) %
+        99;
+      if (el.monsterType.includes("Fusion")) {
+        prio = 5000000000;
+      } else if (el.monsterType.includes("Synchro")) {
+        prio = 4000000000;
+      } else if (
+        el.monsterType.includes("Xyz") ||
+        el.monsterType.includes("XYZ")
+      ) {
+        prio = 3000000000;
+      } else if (el.monsterType.includes("Link")) {
+        prio = 2000000000;
+      }
+      if (el.type == "Monster" && el.monsterType) {
+        if (el.monsterType.includes("Ritual")) {
+          prio += 300000000 + levellink * 100000;
+        } else if (el.monsterType.includes("Normal")) {
+          prio += 500000000 + levellink * 100000;
+        } else {
+          prio += 400000000 + levellink * 100000;
+        }
+      } else if (el.type == "Spell" && el.race) {
+        if (el.race.includes("Normal")) {
+          prio += 200600000;
+        } else if (el.race.includes("Equip")) {
+          prio += 200500000;
+        } else if (el.race.includes("Field")) {
+          prio += 200400000;
+        } else if (el.race.includes("Ritual")) {
+          prio += 200300000;
+        } else if (el.race.includes("Continuous")) {
+          prio += 200200000;
+        } else if (el.race.includes("Quick-Play")) {
+          prio += 200100000;
+        }
+      } else if (el.type == "Trap" && el.race) {
+        if (el.race.includes("Normal")) {
+          prio += 100300000;
+        } else if (el.race.includes("Counter")) {
+          prio += 100200000;
+        } else if (el.race.includes("Continuous")) {
+          prio += 100100000;
+        }
+      }
+      prio += Number(el.ygolID);
+      return prio;
+    }
     function updateYgolDb() {
+      //some incorrectly localised card names are changed after being released in the tcg
+      //those cards will clog up space in the ygolID file but shouldnt be a problem
+
+      //array of card names DO NOT ALTER OLD ENTRIES, OR ELSE IT CHANGES THE YGOL ID OF ALL CARDS
       let json = structuredClone(ygolID);
       for (let el of jsonResponseDl) {
         let name = el.rush ? el.name + " [RUSH]" : el.name;
         if (json.indexOf(name) == -1) json.push(name);
       }
       download(`let ygolID = ${JSON.stringify(json)};`, "ygolID.js");
-      let db = [];
+      //modified db from dlmeta
+      /*let db = [];
       let count = 0;
       for (let name of json) {
         let el = jsonResponseDl.filter(
@@ -62,64 +159,63 @@
             (name.includes(" [RUSH]") ? a.rush : !a.rush)
         )[0];
         console.log({ el });
-        delete el._id;
-        if (el.rush) el.name += " [RUSH]";
-        el.ygolID = count + "";
-        let prio = 1000000000;
-        let levellink =
-          (99 -
-            (el.level ? el.level : 0) -
-            (el.linkRating ? el.linkRating : 0)) %
-          99;
-        if (el.monsterType.includes("Fusion")) {
-          prio = 5000000000;
-        } else if (el.monsterType.includes("Synchro")) {
-          prio = 4000000000;
-        } else if (
-          el.monsterType.includes("Xyz") ||
-          el.monsterType.includes("XYZ")
-        ) {
-          prio = 3000000000;
-        } else if (el.monsterType.includes("Link")) {
-          prio = 2000000000;
+        if (el) {
+          delete el._id;
+          if (el.rush) el.name += " [RUSH]";
+          el.ygolID = count + "";
+          el.priorityDl = prioDl(el);
+          el.priorityMd = prioMd(el);
+          db.push(el);
         }
-        if (el.type == "Monster" && el.monsterType) {
-          if (el.monsterType.includes("Ritual")) {
-            prio += 300000000 + levellink * 100000;
-          } else if (el.monsterType.includes("Normal")) {
-            prio += 500000000 + levellink * 100000;
-          } else {
-            prio += 400000000 + levellink * 100000;
-          }
-        } else if (el.type == "Spell" && el.race) {
-          if (el.race.includes("Normal")) {
-            prio += 200600000;
-          } else if (el.race.includes("Equip")) {
-            prio += 200500000;
-          } else if (el.race.includes("Field")) {
-            prio += 200400000;
-          } else if (el.race.includes("Ritual")) {
-            prio += 200300000;
-          } else if (el.race.includes("Continuous")) {
-            prio += 200200000;
-          } else if (el.race.includes("Quick-Play")) {
-            prio += 200100000;
-          }
-        } else if (el.type == "Trap" && el.race) {
-          if (el.race.includes("Normal")) {
-            prio += 100300000;
-          } else if (el.race.includes("Counter")) {
-            prio += 100200000;
-          } else if (el.race.includes("Continuous")) {
-            prio += 100100000;
-          }
-        }
-        prio += Number(el.ygolID);
-        el.priority = prio;
-        db.push(el);
         count++;
       }
-      download(`let cardDb = ${JSON.stringify(db)};`, "ygolDb.js");
+      download(`let cardDb = ${JSON.stringify(db)};`, "ygolDb.js");*/
+      //dl banlist
+      let banlistDl = [];
+      for (let el of jsonResponseDl) {
+        if (el.banStatus)
+          banlistDl.push({
+            name: el.rush ? el.name + " [RUSH]" : el.name,
+            banStatus: el.banStatus,
+          });
+      }
+      download(`let banlistDl = ${JSON.stringify(banlistDl)};`, "banlistDl.js");
+      //md banlist
+      let banlistMd = [];
+      for (let el of jsonResponseMd) {
+        if (el.banStatus)
+          banlistMd.push({
+            name: el.name,
+            banStatus: el.banStatus,
+          });
+      }
+      download(`let banlistMd = ${JSON.stringify(banlistMd)};`, "banlistMd.js");
+      //tcg banlist
+      let banlistTcg = [];
+      for (let el of jsonResponseMd) {
+        if (el.tcgBanStatus)
+          banlistTcg.push({
+            name: el.name,
+            banStatus: el.tcgBanStatus,
+          });
+      }
+      download(
+        `let banlistTcg = ${JSON.stringify(banlistTcg)};`,
+        "banlistTcg.js"
+      );
+      //ocg banlist
+      let banlistOcg = [];
+      for (let el of jsonResponseMd) {
+        if (el.ocgBanStatus)
+          banlistOcg.push({
+            name: el.name,
+            banStatus: el.ocgBanStatus,
+          });
+      }
+      download(
+        `let banlistOcg = ${JSON.stringify(banlistOcg)};`,
+        "banlistOcg.js"
+      );
     }
     let ygolDeck = new YgolDeck(cardDb, ygolID);
     //createYgolIDList();

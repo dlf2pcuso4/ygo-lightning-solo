@@ -159,7 +159,10 @@
     </div>
     <div id="body">
       <div id="deck">
-        <button class="minibtn" onclick="sortDeck()">Sort (Master Duel)</button>
+        <button id="btnFormat" class="minibtn" onclick="switchFormat()">
+          Format: TCG
+        </button>
+        <button class="minibtn" onclick="sortDeck()">Sort Deck</button>
         <button id="switchMainSide" class="minibtn" onclick="switchMainSide()">
           View Side Deck</button
         ><br />
@@ -206,6 +209,7 @@
     let originalDeckName = "";
     let currentCard = "";
     let cardDivId = "";
+    let format = "tcg";
     let mousedown = false;
     let mousehold = false;
     let poppingup = false;
@@ -263,8 +267,15 @@
       document.getElementById("switchMainSide").innerHTML =
         deckBuilder.switchEditingDeck(main, extra, cardwidth);
     }
+    function switchFormat() {
+      let arrFormats = ["dl", "md", "tcg", "ocg"];
+      format = arrFormats[(arrFormats.indexOf(format) + 1) % 4];
+      document.getElementById(
+        "btnFormat"
+      ).innerHTML = `Format: ${format.toUpperCase()}`;
+    }
     function sortDeck() {
-      deckBuilder.sortDeck(main, extra, cardwidth);
+      deckBuilder.sortDeck(main, extra, cardwidth, format);
     }
     function testHands() {
       let namelist = deckBuilder.exportNamelist();

@@ -34,6 +34,7 @@ class DeckBuilder {
   }
   appendCards(arrNames, targetDiv, width) {
     for (let el of arrNames) {
+      console.log({ el });
       let altSrc = this.errorimage;
       if (el.konamiID)
         altSrc = `https://images.ygoprodeck.com/images/cards/${el.konamiID}.jpg`;
@@ -54,8 +55,8 @@ class DeckBuilder {
   appendDeck(mainDiv, extraDiv, width) {
     mainDiv.innerHTML = "";
     extraDiv.innerHTML = "";
-    let main = this.cards.filter((a) => a.priority < 2000000000);
-    let extra = this.cards.filter((a) => a.priority >= 2000000000);
+    let main = this.cards.filter((a) => a.priorityDl < 2000000000);
+    let extra = this.cards.filter((a) => a.priorityDl >= 2000000000);
     this.appendCards(main, mainDiv, width);
     this.appendCards(extra, extraDiv, width);
   }
@@ -80,12 +81,20 @@ class DeckBuilder {
     if (this.editingDeck == "side")
       this.switchEditingDeck(mainDiv, extraDiv, width);
   }
-  sortDeck(mainDiv, extraDiv, width) {
+  sortDeck(mainDiv, extraDiv, width, format = "dl") {
     if (this.editingDeck == "main") {
-      this.cards.sort((a, b) => b.priority - a.priority);
+      this.cards.sort((a, b) =>
+        format == "dl"
+          ? b.priorityDl - a.priorityDl
+          : b.priorityMd - a.priorityMd
+      );
       this.appendDeck(mainDiv, extraDiv, width);
     } else {
-      this.side.sort((a, b) => b.priority - a.priority);
+      this.side.sort((a, b) =>
+        format == "dl"
+          ? b.priorityDl - a.priorityDl
+          : b.priorityMd - a.priorityMd
+      );
       this.appendSide(mainDiv, extraDiv, width);
     }
   }
@@ -120,12 +129,18 @@ class DeckBuilder {
     this.appendCards(filtered, targetDiv, width);
   }
   addCard(name, mainDiv, extraDiv, width) {
-    if (this.editingDeck == "main") {
-      this.cards.push(this.ygolDb.filter((a) => a.name == name)[0]);
-      this.appendDeck(mainDiv, extraDiv, width);
-    } else {
-      this.side.push(this.ygolDb.filter((a) => a.name == name)[0]);
-      this.appendSide(mainDiv, extraDiv, width);
+    if (
+      this.cards.filter((a) => a.name == name).length +
+        this.side.filter((a) => a.name == name).length <
+      3
+    ) {
+      if (this.editingDeck == "main") {
+        this.cards.push(this.ygolDb.filter((a) => a.name == name)[0]);
+        this.appendDeck(mainDiv, extraDiv, width);
+      } else {
+        this.side.push(this.ygolDb.filter((a) => a.name == name)[0]);
+        this.appendSide(mainDiv, extraDiv, width);
+      }
     }
   }
   removeCard(name, mainDiv, extraDiv, width) {
@@ -148,7 +163,7 @@ class DeckBuilder {
     let extra = "#extra\n";
     let side = "!side\n";
     for (let el of this.cards) {
-      if (el.priority < 2000000000) {
+      if (el.priorityDl < 2000000000) {
         main += el.name + "\n";
       } else {
         extra += el.name + "\n";
