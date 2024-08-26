@@ -5,6 +5,8 @@ class DeckBuilder {
     this.name = name;
     this.cards = cards; //card objects from ygolID
     this.side = side;
+    this.format = "tcg";
+    this.banlists = [];
     this.editingDeck = "main";
     this.errorimage = this.url("v1/errorimage.jpg");
   }
@@ -21,6 +23,12 @@ class DeckBuilder {
   renameDeck(name) {
     this.name = name;
   }
+  changeFormat(format) {
+    this.format = format;
+  }
+  addBanlist(format, arrBanlist) {
+    this.banlists.push({ format: format, banlist: arrBanlist });
+  }
   switchEditingDeck(mainDiv, extraDiv, width) {
     if (this.editingDeck == "main") {
       this.editingDeck = "side";
@@ -34,7 +42,6 @@ class DeckBuilder {
   }
   appendCards(arrNames, targetDiv, width) {
     for (let el of arrNames) {
-      console.log({ el });
       let altSrc = this.errorimage;
       if (el.konamiID)
         altSrc = `https://images.ygoprodeck.com/images/cards/${el.konamiID}.jpg`;
@@ -50,6 +57,19 @@ class DeckBuilder {
           this.errorimage
         }\`;}else{this.src=\`${altSrc}\`}" >`
       );
+      let banlistCard = this.banlists
+        .filter((a) => a.format == this.format)[0]
+        .banlist.filter((a) => a.name == el.name)[0];
+      if (banlistCard) {
+        targetDiv.insertAdjacentHTML(
+          "beforeend",
+          `<img src="v1/${banlistCard.banStatus}.png" style="width:${
+            width / 3
+          }px;margin:-${(width * 35) / 24}px ${(width * 2) / 3}px ${
+            (width * 9) / 8
+          }px -${width}px ;">`
+        );
+      }
     }
   }
   appendDeck(mainDiv, extraDiv, width) {

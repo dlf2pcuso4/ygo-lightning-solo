@@ -195,6 +195,10 @@
   <script src="v1/profile.class.js"></script>
   <script src="v1/ygolDb.js"></script>
   <script src="v1/ygolID.js"></script>
+  <script src="v1/banlistDl.js"></script>
+  <script src="v1/banlistMd.js"></script>
+  <script src="v1/banlistTcg.js"></script>
+  <script src="v1/banlistOcg.js"></script>
   <script src="v1/ygolDeck.class.js"></script>
   <script src="v1/deckBuilder.class.js"></script>
   <script>
@@ -206,10 +210,16 @@
     let profile = new Profile("");
     let ygolDeck = new YgolDeck(cardDb, ygolID, false);
     let deckBuilder = new DeckBuilder(cardDb);
+    deckBuilder.addBanlist("dl", banlistDl);
+    deckBuilder.addBanlist("md", banlistMd);
+    deckBuilder.addBanlist("tcg", banlistTcg);
+    deckBuilder.addBanlist("ocg", banlistOcg);
+    deckBuilder.addBanlist("unlimited", []);
+    let format = "tcg";
+    deckBuilder.changeFormat(format);
     let originalDeckName = "";
     let currentCard = "";
     let cardDivId = "";
-    let format = "tcg";
     let mousedown = false;
     let mousehold = false;
     let poppingup = false;
@@ -268,11 +278,24 @@
         deckBuilder.switchEditingDeck(main, extra, cardwidth);
     }
     function switchFormat() {
-      let arrFormats = ["dl", "md", "tcg", "ocg"];
-      format = arrFormats[(arrFormats.indexOf(format) + 1) % 4];
+      let arrFormats = ["dl", "md", "tcg", "ocg", "unlimited"];
+      format = arrFormats[(arrFormats.indexOf(format) + 1) % arrFormats.length];
       document.getElementById(
         "btnFormat"
       ).innerHTML = `Format: ${format.toUpperCase()}`;
+      deckBuilder.changeFormat(format);
+      if (deckBuilder.editingDeck == "main") {
+        deckBuilder.appendDeck(main, extra, cardwidth);
+      } else {
+        deckBuilder.appendSide(main, extra, cardwidth);
+      }
+      let input = document.getElementById("searchInput").value;
+      if (
+        input.length > 2 &&
+        input == document.getElementById("searchInput").value
+      ) {
+        deckBuilder.searchCard(input, searchResult, cardwidth);
+      }
     }
     function sortDeck() {
       deckBuilder.sortDeck(main, extra, cardwidth, format);
