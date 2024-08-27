@@ -17,21 +17,21 @@
         font-family: "Bahnschrift";
         font-weight: lighter;
         font-size: 25px;
-        color: rgb(255, 255, 255);
+        color: #ffffff;
       }
       #body {
         display: flex;
         border-width: 2px;
-        border-color: rgb(94, 60, 179);
+        border-color: #5e3cb3;
         border-style: solid;
       }
       #body > div {
         margin: 10px;
       }
       .purple {
-        background-color: rgb(13, 7, 27);
+        background-color: #0d071b;
         border-width: 4px;
-        border-color: rgb(94, 60, 179);
+        border-color: #5e3cb3;
         border-style: solid;
       }
       p {
@@ -43,7 +43,7 @@
         font-family: "Bahnschrift";
         font-weight: lighter;
         color: #ffffff;
-        background-color: rgb(32, 24, 52);
+        background-color: #201834;
         border: none;
         width: 300px;
         margin-bottom: 10px;
@@ -54,7 +54,7 @@
         font-family: "Bahnschrift";
         font-weight: lighter;
         color: #ffffff;
-        background-color: rgb(32, 24, 52);
+        background-color: #201834;
         border: none;
         width: 300px;
         height: 200px;
@@ -65,13 +65,13 @@
       button {
         width: 200px;
         height: 50px;
-        background-color: rgb(32, 24, 52);
+        background-color: #201834;
         font-family: "Bahnschrift";
         font-weight: lighter;
         font-size: 20px;
-        color: rgb(255, 255, 255);
+        color: #ffffff;
         border-width: 4px;
-        border-color: rgb(94, 60, 179);
+        border-color: #5e3cb3;
         border-style: solid;
         cursor: pointer;
         padding: 0px;
@@ -79,7 +79,7 @@
         margin-bottom: 10px;
       }
       button:hover {
-        background-color: rgb(94, 60, 179);
+        background-color: #5e3cb3;
       }
       .minibtn {
         width: 150px;
@@ -87,14 +87,20 @@
         font-size: 15px;
         border-width: 3px;
       }
+      .filterbtn {
+        width: 100px;
+        height: 40px;
+        font-size: 15px;
+        border-width: 3px;
+      }
       select {
         width: 400px;
         height: 50px;
-        background-color: rgb(32, 24, 52);
+        background-color: #201834;
         font-family: "Bahnschrift";
         font-weight: lighter;
         font-size: 20px;
-        color: rgb(255, 255, 255);
+        color: #ffffff;
         border-width: 2px;
         border-color: #000000;
         border-style: solid;
@@ -140,6 +146,8 @@
       #popup {
         width: 800px;
         min-height: 600px;
+        max-height: 85vh;
+        overflow: scroll;
         background-color: #000000dd;
         padding: 20px;
         justify-content: center;
@@ -148,6 +156,10 @@
       .cardname {
         font-size: 20px;
         text-align: center;
+      }
+      .filterheader {
+        font-size: 25px;
+        margin-bottom: 10px;
       }
     </style>
   </head>
@@ -184,6 +196,7 @@
           onkeyup="cardSearch()"
           autocomplete="off"
         />
+        <button class="filterbtn" onclick="openFilter()">Filter</button>
         <div id="searchResult" class="purple"></div>
         <button onclick="testHands()">Test Hands</button>
         <button id="copyYdke" onclick="copyYdke()">Copy ydke</button><br />
@@ -223,6 +236,8 @@
     let mousedown = false;
     let mousehold = false;
     let poppingup = false;
+    let selectingFilters = false;
+    let filters = [];
     let holdThreshold = 500;
 
     document.addEventListener("mousedown", (event) => {
@@ -239,13 +254,21 @@
           deckBuilder.addCard(currentCard, main, extra, cardwidth);
         }
       }
+      if (poppingup)
+        document.getElementById("popupCss1").style.display = "none";
       mousedown = false;
       mousehold = false;
       poppingup = false;
       currentCard = "";
       cardDivId = "";
-      document.getElementById("popupCss1").style.display = "none";
     });
+    document
+      .getElementById("popupCss1")
+      .addEventListener("mouseup", (event) => {
+        if (!selectingFilters)
+          document.getElementById("popupCss1").style.display = "none";
+        selectingFilters = false;
+      });
     setInterval(() => {
       if (mousehold && currentCard && !poppingup) {
         poppingup = true;
@@ -257,7 +280,18 @@
         );
       }
     }, 100);
-
+    function updateFilterDisplay() {
+      for (let el of document
+        .getElementById("popup")
+        .querySelectorAll("button")) {
+        el.style.backgroundColor = "#201834";
+        for (let innerHTML of filters) {
+          if (el.innerHTML.replace(/^\s+|\n/g, "") == innerHTML) {
+            el.style.backgroundColor = "#5e3cb3";
+          }
+        }
+      }
+    }
     function cardClicked(divid, cardname) {
       currentCard = cardname;
       cardDivId = divid;
@@ -266,12 +300,27 @@
       let input = document.getElementById("searchInput").value;
       setTimeout(() => {
         if (
-          input.length > 2 &&
+          (input.length > 2 || filters.length) &&
           input == document.getElementById("searchInput").value
         ) {
-          deckBuilder.searchCard(input, searchResult, cardwidth);
+          deckBuilder.searchCard(input, searchResult, cardwidth, filters);
         }
       }, 500);
+    }
+    function openFilter() {
+      document.getElementById("popup").innerHTML = editorFilters;
+      document.getElementById("popupCss1").style.display = "flex";
+      updateFilterDisplay();
+    }
+    function selectFilter(innerHTMLWithSpaces) {
+      let innerHTML = innerHTMLWithSpaces.replace(/^\s+|\n/g, "");
+      selectingFilters = true;
+      if (filters.includes(innerHTML)) {
+        filters = filters.filter((a) => a != innerHTML);
+      } else {
+        filters.push(innerHTML);
+      }
+      updateFilterDisplay();
     }
     function switchMainSide() {
       document.getElementById("switchMainSide").innerHTML =
@@ -291,10 +340,10 @@
       }
       let input = document.getElementById("searchInput").value;
       if (
-        input.length > 2 &&
+        (input.length > 2 || filters.length) &&
         input == document.getElementById("searchInput").value
       ) {
-        deckBuilder.searchCard(input, searchResult, cardwidth);
+        deckBuilder.searchCard(input, searchResult, cardwidth, filters);
       }
     }
     function sortDeck() {

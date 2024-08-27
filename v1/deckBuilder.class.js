@@ -44,7 +44,9 @@ class DeckBuilder {
     for (let el of arrNames) {
       let altSrc = this.errorimage;
       if (el.konamiID)
-        altSrc = `https://images.ygoprodeck.com/images/cards/${el.konamiID}.jpg`;
+        altSrc = `https://images.ygoprodeck.com/images/cards/${Number(
+          el.konamiID
+        )}.jpg`;
       targetDiv.insertAdjacentHTML(
         "beforeend",
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
@@ -137,14 +139,62 @@ class DeckBuilder {
       <p>${cardObj.description}</p>`
     );
   }
-  searchCard(name, targetDiv, width, criteria = [], sort = "", limit = 300) {
-    //criteria being an array of objects with criteria and value
+  searchCard(name, targetDiv, width, criterias = [], sort = "", limit = 300) {
     targetDiv.innerHTML = "";
     let filtered = this.ygolDb.filter((a) => {
       let n = a.name.toLowerCase();
       let d = a.description.toLowerCase();
       return n.includes(name.toLowerCase()) || d.includes(name.toLowerCase());
     });
+    //apply filters
+    console.log({ criterias });
+    for (let term of criterias) {
+      if (term.includes("Monster")) {
+        filtered = filtered.filter((a) => a.type == "Monster");
+        if (term != "Monster") {
+          //monster type
+          let monsterType = term.replace(" Monster", "");
+          if (monsterType == "Main Deck") {
+            //
+          } else if (monsterType == "Extra Deck") {
+            //
+          } else if (monsterType == "Non-Effect") {
+            //
+          } else {
+            console.log(monsterType);
+            filtered = filtered.filter((a) =>
+              a.monsterType.includes(monsterType)
+            );
+          }
+        }
+      } else if (term.includes("Spell")) {
+        filtered = filtered.filter((a) => a.type == "Spell");
+        if (term != "Spell") {
+          let spellType = term.replace(" Spell", "");
+          filtered = filtered.filter((a) => a.race.includes(spellType));
+        }
+      } else if (term.includes("Trap")) {
+        filtered = filtered.filter((a) => a.type == "Trap");
+        if (term != "Trap") {
+          let trapType = term.replace(" Trap", "");
+          filtered = filtered.filter((a) => a.race.includes(trapType));
+        }
+      } else if (term.includes("Level/Rank")) {
+        let levelrank = term.replace("Level/Rank ", "");
+        filtered = filtered.filter((a) => a.level == levelrank);
+      } else if (term.includes("Link")) {
+        let link = term.replace("Link ", "");
+        filtered = filtered.filter((a) => a.linkRating == link);
+      } else if (term.toUpperCase() == term) {
+        filtered = filtered.filter((a) => a.attribute == term);
+      } else if (term.includes("(DL)")) {
+        //DL
+      } else if (term.includes("(MD)")) {
+        //MD
+      } else {
+        filtered = filtered.filter((a) => a.race == term);
+      }
+    }
     filtered.length = limit;
     this.appendCards(filtered, targetDiv, width);
   }
@@ -195,3 +245,299 @@ class DeckBuilder {
     return main + extra + side;
   }
 }
+let editorFilters = `
+<p class="filterheader">Card Type</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Spell
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Trap
+</button>
+<p class="filterheader">Monster Type</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Normal Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Effect Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Fusion Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Ritual Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Synchro Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  XYZ Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Pendulum Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Main Deck Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Extra Deck Monster
+</button>
+<br />
+<br />
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Tuner Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Union Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Spirit Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Flip Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Gemini Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Toon Monster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Non-Effect Monster
+</button>
+<p class="filterheader">Spell Type</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Normal Spell
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Continuous Spell
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Equip Spell
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Field Spell
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Ritual Spell
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Quick-Play Spell
+</button>
+<p class="filterheader">Trap Type</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Normal Trap
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Continuous Trap
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Counter Trap
+</button>
+<p class="filterheader">Level/Rank</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 1
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 2
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 3
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 4
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 5
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 6
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 7
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 8
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 9
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 10
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 11
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 12
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Level/Rank 13
+</button>
+<p class="filterheader">Link Rating</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link 1
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link 2
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link 3
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link 4
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link 5
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Link 6
+</button>
+<p class="filterheader">Attribute</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  LIGHT
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  DARK
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  EARTH
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  WIND
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  WATER
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  FIRE
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  DIVINE
+</button>
+<p class="filterheader">Type</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Aqua
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Beast
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Beast-Warrior
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Creator-God
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Cyberse
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Dinosaur
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Divine-Beast
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Dragon
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Fairy
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Fiend
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Fish
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Insect
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Machine
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Plant
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Psychic
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Pyro
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Reptile
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Rock
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Sea Serpent
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Spellcaster
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Thunder
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Warrior
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Winged Beast
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Wyrm
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Zombie
+</button>
+<p class="filterheader">Duel Links</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  UR (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  SR (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  R (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  N (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Free (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Rush (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Released (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Not Released (DL)
+</button>
+<p class="filterheader">Master Duel</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  UR (MD)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  SR (MD)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  R (MD)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  N (MD)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Released (MD)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Not Released (MD)
+</button>
+`;
