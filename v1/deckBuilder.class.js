@@ -124,7 +124,9 @@ class DeckBuilder {
     let cardObj = this.ygolDb.filter((a) => a.name == name)[0];
     let altSrc = this.errorimage;
     if (cardObj.konamiID)
-      altSrc = `https://images.ygoprodeck.com/images/cards/${cardObj.konamiID}.jpg`;
+      altSrc = `https://images.ygoprodeck.com/images/cards/${Number(
+        cardObj.konamiID
+      )}.jpg`;
     targetDiv.innerHTML = "";
     targetDiv.insertAdjacentHTML(
       "beforeend",

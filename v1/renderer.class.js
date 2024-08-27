@@ -180,7 +180,9 @@ class Renderer {
             360,
             525,
             {
-              altSrc: `https://images.ygoprodeck.com/images/cards/${card.konamiID}.jpg`,
+              altSrc: `https://images.ygoprodeck.com/images/cards/${Number(
+                card.konamiID
+              )}.jpg`,
               errorSrc: this.errorimage,
             }
           );
@@ -271,7 +273,9 @@ class Renderer {
             cardname: maindeck[i],
             list: null,
             isFaceup: false,
-            altSrc: `https://images.ygoprodeck.com/images/cards/${konamiID}.jpg`,
+            altSrc: `https://images.ygoprodeck.com/images/cards/${Number(
+              konamiID
+            )}.jpg`,
             errorSrc: this.errorimage,
           }
         );
@@ -295,7 +299,9 @@ class Renderer {
             cardname: extradeck[i],
             list: null,
             isFaceup: false,
-            altSrc: `https://images.ygoprodeck.com/images/cards/${konamiID}.jpg`,
+            altSrc: `https://images.ygoprodeck.com/images/cards/${Number(
+              konamiID
+            )}.jpg`,
             errorSrc: this.errorimage,
           }
         );
