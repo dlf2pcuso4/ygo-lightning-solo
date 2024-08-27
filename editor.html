@@ -152,6 +152,7 @@
         padding: 20px;
         justify-content: center;
         font-size: 15px;
+        position: relative;
       }
       .cardname {
         font-size: 20px;
@@ -238,6 +239,7 @@
     let poppingup = false;
     let selectingFilters = false;
     let filters = [];
+    let sort = "Popularity";
     let holdThreshold = 500;
 
     document.addEventListener("mousedown", (event) => {
@@ -265,8 +267,19 @@
     document
       .getElementById("popupCss1")
       .addEventListener("mouseup", (event) => {
-        if (!selectingFilters)
+        if (!selectingFilters) {
           document.getElementById("popupCss1").style.display = "none";
+          let input = document.getElementById("searchInput").value;
+          if (input.length > 2 || filters.length) {
+            deckBuilder.searchCard(
+              input,
+              searchResult,
+              cardwidth,
+              filters,
+              sort
+            );
+          }
+        }
         selectingFilters = false;
       });
     setInterval(() => {
@@ -285,6 +298,9 @@
         .getElementById("popup")
         .querySelectorAll("button")) {
         el.style.backgroundColor = "#201834";
+        if (el.innerHTML.replace(/^\s+|\n/g, "") == sort) {
+          el.style.backgroundColor = "#5e3cb3";
+        }
         for (let innerHTML of filters) {
           if (el.innerHTML.replace(/^\s+|\n/g, "") == innerHTML) {
             el.style.backgroundColor = "#5e3cb3";
@@ -303,7 +319,7 @@
           (input.length > 2 || filters.length) &&
           input == document.getElementById("searchInput").value
         ) {
-          deckBuilder.searchCard(input, searchResult, cardwidth, filters);
+          deckBuilder.searchCard(input, searchResult, cardwidth, filters, sort);
         }
       }, 500);
     }
@@ -320,6 +336,16 @@
       } else {
         filters.push(innerHTML);
       }
+      updateFilterDisplay();
+    }
+    function clearFilters() {
+      selectingFilters = true;
+      filters.length = 0;
+      updateFilterDisplay();
+    }
+    function selectSort(innerHTMLWithSpaces) {
+      selectingFilters = true;
+      sort = innerHTMLWithSpaces.replace(/^\s+|\n/g, "");
       updateFilterDisplay();
     }
     function switchMainSide() {
@@ -339,11 +365,8 @@
         deckBuilder.appendSide(main, extra, cardwidth);
       }
       let input = document.getElementById("searchInput").value;
-      if (
-        (input.length > 2 || filters.length) &&
-        input == document.getElementById("searchInput").value
-      ) {
-        deckBuilder.searchCard(input, searchResult, cardwidth, filters);
+      if (input.length > 2 || filters.length) {
+        deckBuilder.searchCard(input, searchResult, cardwidth, filters, sort);
       }
     }
     function sortDeck() {

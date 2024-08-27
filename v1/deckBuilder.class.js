@@ -158,7 +158,7 @@ class DeckBuilder {
                 !(
                   a.monsterType.includes("Fusion") ||
                   a.monsterType.includes("Synchro") ||
-                  a.monsterType.includes("XYZ") ||
+                  a.monsterType.includes("Xyz") ||
                   a.monsterType.includes("Link")
                 )
             );
@@ -167,7 +167,7 @@ class DeckBuilder {
               (a) =>
                 a.monsterType.includes("Fusion") ||
                 a.monsterType.includes("Synchro") ||
-                a.monsterType.includes("XYZ") ||
+                a.monsterType.includes("Xyz") ||
                 a.monsterType.includes("Link")
             );
           } else if (monsterType == "Non-Effect") {
@@ -213,6 +213,13 @@ class DeckBuilder {
       }
     }
     filtered.length = limit;
+    if (sort == "Popularity") {
+      filtered.sort((a, b) => a.popRank - b.popRank);
+    } else if (sort == "Rarity") {
+      //rarity
+    } else {
+      //name
+    }
     this.appendCards(filtered, targetDiv, width);
   }
   addCard(name, mainDiv, extraDiv, width) {
@@ -263,6 +270,16 @@ class DeckBuilder {
   }
 }
 let editorFilters = `
+<p class="filterheader">Sort By</p>
+<button class="minibtn" onmousedown="selectSort(this.innerHTML)">
+  Popularity
+</button>
+<button class="minibtn" onmousedown="selectSort(this.innerHTML)">
+  Name
+</button>
+<button class="minibtn" onmousedown="selectSort(this.innerHTML)">
+  Rarity
+</button>
 <p class="filterheader">Card Type</p>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   Monster
@@ -290,7 +307,7 @@ let editorFilters = `
   Synchro Monster
 </button>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
-  XYZ Monster
+  Xyz Monster
 </button>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   Pendulum Monster
@@ -564,4 +581,10 @@ let editorFilters = `
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   Not Released (MD)
 </button>
+<br />
+<div style="position: sticky; text-align: end; bottom: 10px; right: 10px;">
+  <button onmousedown="clearFilters()">
+    Clear Filters
+  </button>
+</div>
 `;
