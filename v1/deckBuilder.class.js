@@ -147,21 +147,34 @@ class DeckBuilder {
       return n.includes(name.toLowerCase()) || d.includes(name.toLowerCase());
     });
     //apply filters
-    console.log({ criterias });
     for (let term of criterias) {
       if (term.includes("Monster")) {
         filtered = filtered.filter((a) => a.type == "Monster");
         if (term != "Monster") {
-          //monster type
           let monsterType = term.replace(" Monster", "");
           if (monsterType == "Main Deck") {
-            //
+            filtered = filtered.filter(
+              (a) =>
+                !(
+                  a.monsterType.includes("Fusion") ||
+                  a.monsterType.includes("Synchro") ||
+                  a.monsterType.includes("XYZ") ||
+                  a.monsterType.includes("Link")
+                )
+            );
           } else if (monsterType == "Extra Deck") {
-            //
+            filtered = filtered.filter(
+              (a) =>
+                a.monsterType.includes("Fusion") ||
+                a.monsterType.includes("Synchro") ||
+                a.monsterType.includes("XYZ") ||
+                a.monsterType.includes("Link")
+            );
           } else if (monsterType == "Non-Effect") {
-            //
+            filtered = filtered.filter(
+              (a) => !a.monsterType.includes("Effect")
+            );
           } else {
-            console.log(monsterType);
             filtered = filtered.filter((a) =>
               a.monsterType.includes(monsterType)
             );
@@ -191,6 +204,10 @@ class DeckBuilder {
         //DL
       } else if (term.includes("(MD)")) {
         //MD
+      } else if (term == "Handtrap") {
+        filtered = filtered.filter((a) => a.handtrap);
+      } else if (term == "Floodgate") {
+        filtered = filtered.filter((a) => a.floodgate);
       } else {
         filtered = filtered.filter((a) => a.race == term);
       }
@@ -495,6 +512,13 @@ let editorFilters = `
 </button>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   Zombie
+</button>
+<p class="filterheader">Staples</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Handtrap
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Floodgate
 </button>
 <p class="filterheader">Duel Links</p>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
