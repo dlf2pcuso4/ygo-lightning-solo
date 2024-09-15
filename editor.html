@@ -176,20 +176,29 @@
           Format: TCG
         </button>
         <button class="minibtn" onclick="sortDeck()">Sort Deck</button>
+        <button class="minibtn" id="btnControl" onclick="showControls()">
+          Editor Menu
+        </button>
         <button id="switchMainSide" class="minibtn" onclick="switchMainSide()">
-          View Side Deck</button
+          View Side Deck
+        </button>
+        <button id="switchMode" class="minibtn" onclick="switchMode()">
+          Mode: View</button
         ><br />
         <div id="main" class="purple"></div>
         <div id="extra" class="purple"></div>
       </div>
-      <div>
+      <div id="controls">
         <input
           id="deckName"
           value="Untitled Deck"
           type="text"
           placeholder="Deck name..."
           autocomplete="off"
-        /><br />
+        />
+        <button class="filterbtn" id="btnViewDeck" onclick="showControls()">
+          View Deck</button
+        ><br />
         <input
           id="searchInput"
           type="text"
@@ -241,6 +250,63 @@
     let filters = [];
     let sort = "Popularity";
     let holdThreshold = 500;
+    let _isMobile = window.innerHeight > window.innerWidth;
+    let editMode = "edit";
+
+    //mobile view
+    if (_isMobile) {
+      editMode = "view";
+      document.getElementById("deck").style.width = "90vw";
+      document.getElementById("body").style.display = "block";
+      document.getElementById("main").style.width = "80vw";
+      document.getElementById("main").style.height = "50vh";
+      document.getElementById("extra").style.width = "80vw";
+      document.getElementById("extra").style.height = "20vh";
+      cardwidth = window.innerWidth / 8;
+      document.getElementById("controls").style.display = "none";
+      document.getElementById("searchResult").style.width = "80vw";
+      document.getElementById("popup").style.width = "95vw";
+      document.head.insertAdjacentHTML(
+        "beforeend",
+        "<style>.minibtn{width: 30vw;} button{width: 40vw;} #popup{font-size: 3.5vw;} .cardname{font-size: 4.2vw;}</style>"
+      );
+      for (let el of document.querySelectorAll("input")) {
+        el.style.width = "55vw";
+      }
+      for (let el of document.querySelectorAll("button")) {
+        if (el.classList.contains("minibtn")) {
+          el.style.width = "27vw";
+        } else if (el.classList.contains("filterbtn")) {
+          el.style.width = "20vw";
+        } else {
+          el.style.width = "40vw";
+        }
+      }
+    } else {
+      document.getElementById("btnControl").style.display = "none";
+      document.getElementById("btnViewDeck").style.display = "none";
+      document.getElementById("switchMode").style.display = "none";
+    }
+
+    function showControls() {
+      if (document.getElementById("controls").style.display == "none") {
+        document.getElementById("controls").style.display = "block";
+        document.getElementById("deck").style.display = "none";
+      } else {
+        document.getElementById("controls").style.display = "none";
+        document.getElementById("deck").style.display = "block";
+      }
+    }
+
+    function switchMode() {
+      if (editMode == "view") {
+        editMode = "edit";
+        document.getElementById("switchMode").innerHTML = "Mode: Edit";
+      } else {
+        editMode = "view";
+        document.getElementById("switchMode").innerHTML = "Mode: View";
+      }
+    }
 
     document.addEventListener("mousedown", (event) => {
       mousedown = true;
@@ -249,11 +315,25 @@
       }, holdThreshold);
     });
     document.addEventListener("mouseup", (event) => {
-      if (!mousehold) {
-        if (cardDivId == "main" || cardDivId == "extra") {
-          deckBuilder.removeCard(currentCard, main, extra, cardwidth);
-        } else if (cardDivId == "searchResult") {
-          deckBuilder.addCard(currentCard, main, extra, cardwidth);
+      if (
+        !mousehold &&
+        (cardDivId == "main" ||
+          cardDivId == "extra" ||
+          cardDivId == "searchResult")
+      ) {
+        if (editMode == "edit") {
+          if (cardDivId == "searchResult") {
+            deckBuilder.addCard(currentCard, main, extra, cardwidth);
+          } else {
+            deckBuilder.removeCard(currentCard, main, extra, cardwidth);
+          }
+        } else {
+          document.getElementById("popupCss1").style.display = "flex";
+          deckBuilder.displayCard(
+            currentCard,
+            document.getElementById("popup"),
+            window.innerWidth / 3
+          );
         }
       }
       if (poppingup)
