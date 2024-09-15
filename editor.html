@@ -256,28 +256,31 @@
     //mobile view
     if (_isMobile) {
       editMode = "view";
-      document.getElementById("deck").style.width = "90vw";
-      document.getElementById("body").style.display = "block";
-      document.getElementById("main").style.width = "80vw";
-      document.getElementById("main").style.height = "50vh";
-      document.getElementById("extra").style.width = "80vw";
-      document.getElementById("extra").style.height = "20vh";
       cardwidth = window.innerWidth / 8;
-      document.getElementById("controls").style.display = "none";
-      document.getElementById("searchResult").style.width = "80vw";
-      document.getElementById("popup").style.width = "95vw";
       document.head.insertAdjacentHTML(
         "beforeend",
-        "<style>*{font-weight: 500;} .minibtn{width: 30vw; height: 7vw; font-size: 3.2vw;} .filterbtn{width: 20vw; height: 7vw; font-size: 2.7vw;} button{width: 40vw; height: 8vw; font-size: 4vw; font-weight: 500;} #popup{font-size: 3.5vw;} .cardname{font-size: 4.2vw;}</style>"
+        `<style>
+          *{font-weight: 500;}
+          #deck{width: 90vw;}
+          #main{width: 80vw; height: 50vh;}
+          #extra{width: 80vw; height: 20vh;}
+          input{width: 55vw; height: 5.5vw; font-size: 3.8vw;}
+          .minibtn{width: 30vw; height: 7vw; font-size: 3.2vw;}
+          .filterbtn{width: 20vw; height: 7vw; font-size: 2.7vw;}
+          button{width: 40vw; height: 8vw; font-size: 4vw; font-weight: 500;}
+          #popup{font-size: 3.5vw;}
+          .cardname{font-size: 4.2vw;}
+          #controls{display: none;}
+          #searchResult{width: 80vw; height: 62vh;}
+          #popup{width: 95vw;}
+        </style>`
       );
-      for (let el of document.querySelectorAll("input")) {
-        el.style.width = "55vw";
-      }
       for (let el of document.querySelectorAll("button")) {
         if (el.classList.contains("minibtn")) {
           el.style.width = "27vw";
         }
       }
+      document.getElementById("controls").style.display = "none";
     } else {
       document.getElementById("btnControl").style.display = "none";
       document.getElementById("btnViewDeck").style.display = "none";
