@@ -149,6 +149,7 @@ class DeckBuilder {
       return n.includes(name.toLowerCase()) || d.includes(name.toLowerCase());
     });
     //apply filters
+    let showall = false;
     for (let term of criterias) {
       if (term.includes("Monster")) {
         filtered = filtered.filter((a) => a.type == "Monster");
@@ -204,17 +205,25 @@ class DeckBuilder {
         filtered = filtered.filter((a) => a.attribute == term);
       } else if (term.includes("(DL)")) {
         //DL
+        if (term.includes("Free")) {
+          filtered = filtered.filter((a) => a.zeroGem);
+        }
       } else if (term.includes("(MD)")) {
         //MD
       } else if (term == "Handtrap") {
         filtered = filtered.filter((a) => a.handtrap);
       } else if (term == "Floodgate") {
         filtered = filtered.filter((a) => a.floodgate);
+      } else if (term == "Show Rush") {
+        filtered = filtered.filter((a) => a.rush);
+        showall = true;
+      } else if (term == "Show All") {
+        showall = true;
       } else {
         filtered = filtered.filter((a) => a.race == term);
       }
     }
-    filtered.length = limit;
+    if (!showall) filtered = filtered.filter((a) => !a.rush);
     if (sort == "Popularity") {
       filtered.sort((a, b) => a.popRank - b.popRank);
     } else if (sort == "Rarity") {
@@ -222,6 +231,7 @@ class DeckBuilder {
     } else {
       //name
     }
+    filtered.length = limit;
     this.appendCards(filtered, targetDiv, width);
   }
   addCard(name, mainDiv, extraDiv, width) {
@@ -281,6 +291,13 @@ let editorFilters = `
 </button>
 <button class="minibtn" onmousedown="selectSort(this.innerHTML)">
   Rarity
+</button>
+<p class="filterheader">Alternate Formats</p>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Show Rush
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Show All
 </button>
 <p class="filterheader">Card Type</p>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
@@ -541,6 +558,9 @@ let editorFilters = `
 </button>
 <p class="filterheader">Duel Links</p>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
+  Free (DL)
+</button>
+<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   UR (DL)
 </button>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
@@ -551,12 +571,6 @@ let editorFilters = `
 </button>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   N (DL)
-</button>
-<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
-  Free (DL)
-</button>
-<button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
-  Rush (DL)
 </button>
 <button class="minibtn" onmousedown="selectFilter(this.innerHTML)">
   Released (DL)

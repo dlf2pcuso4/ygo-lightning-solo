@@ -93,24 +93,11 @@
         font-size: 15px;
         border-width: 3px;
       }
-      select {
-        width: 400px;
-        height: 50px;
-        background-color: #201834;
-        font-family: "Bahnschrift";
-        font-weight: lighter;
-        font-size: 20px;
-        color: #ffffff;
-        border-width: 2px;
-        border-color: #000000;
-        border-style: solid;
-        cursor: pointer;
-      }
       #main {
         margin-bottom: 10px;
         padding: 10px;
         width: 665px;
-        height: 400px;
+        height: 380px;
         overflow-y: scroll;
       }
       #extra {
@@ -158,6 +145,10 @@
         font-size: 20px;
         text-align: center;
       }
+      .skilltext {
+        color: #ffff77;
+        cursor: pointer;
+      }
       .filterheader {
         font-size: 25px;
         margin-bottom: 10px;
@@ -183,8 +174,9 @@
           View Side Deck
         </button>
         <button id="switchMode" class="minibtn" onclick="switchMode()">
-          Mode: View</button
-        ><br />
+          Mode: View
+        </button>
+        <div class="cardname skilltext" id="skillname">Skill Not Set</div>
         <div id="main" class="purple"></div>
         <div id="extra" class="purple"></div>
       </div>
@@ -207,17 +199,26 @@
           autocomplete="off"
         />
         <button class="filterbtn" onclick="openFilter()">Options</button>
+        <br />
+        <input
+          id="skillInput"
+          type="text"
+          placeholder="Search skill..."
+          onkeyup="skillSearch()"
+          autocomplete="off"
+        />
         <div id="searchResult" class="purple"></div>
         <button onclick="testHands()">Test Hands</button>
         <button id="copyYdke" onclick="copyYdke()">Copy ydke</button><br />
-        <button onclick="saveDeck()">Save and Exit</button>
-        <button onclick="exit()">Exit</button>
+        <button id="saveExit" onclick="saveDeck()">Save and Exit</button>
+        <button id="exit" onclick="exit()">Exit</button>
       </div>
     </div>
   </body>
   <script src="v1/profile.class.js"></script>
   <script src="v1/ygolDb.js"></script>
   <script src="v1/ygolID.js"></script>
+  <script src="v1/skillDb.js"></script>
   <script src="v1/banlistDl.js"></script>
   <script src="v1/banlistMd.js"></script>
   <script src="v1/banlistTcg.js"></script>
@@ -270,6 +271,7 @@
           button{width: 40vw; height: 8vw; font-size: 4vw; font-weight: 500;}
           #popup{font-size: 3.5vw;}
           .cardname{font-size: 4.2vw;}
+          .skilltext {font-size: 4.2vw;}
           #controls{display: none;}
           #searchResult{width: 80vw; height: 62vh;}
           #popup{width: 95vw;}
@@ -305,6 +307,12 @@
         editMode = "view";
         document.getElementById("switchMode").innerHTML = "Mode: View";
       }
+    }
+
+    //dlf2p.com special controls
+    if (window.location.href.includes("dlf2p=true")) {
+      document.getElementById("saveExit").innerHTML = "Create Deck";
+      document.getElementById("exit").style.display = "none";
     }
 
     document.addEventListener("mousedown", (event) => {
@@ -402,6 +410,31 @@
         }
       }, 500);
     }
+    function skillSearch() {
+      let input = document.getElementById("skillInput").value;
+      setTimeout(() => {
+        if (
+          (input.length > 2 || filters.length) &&
+          input == document.getElementById("skillInput").value
+        ) {
+          let results = skillDb.filter(
+            (a) =>
+              a.name.toLowerCase().includes(input.toLowerCase()) ||
+              a.description.toLowerCase().includes(input.toLowerCase())
+          );
+          searchResult.innerHTML = "";
+          for (let item of results) {
+            searchResult.innerHTML += `<div class="skilltext" onclick="selectSkill('${item.name.replace(
+              /"/g,
+              "&quot;"
+            )}')">✦ ${item.name}</div>`;
+          }
+        }
+      }, 500);
+    }
+    function selectSkill(name) {
+      document.getElementById("skillname").innerHTML = `✦ ${name}`;
+    }
     function openFilter() {
       document.getElementById("popup").innerHTML = editorFilters;
       document.getElementById("popupCss1").style.display = "flex";
@@ -438,6 +471,13 @@
         "btnFormat"
       ).innerHTML = `Format: ${format.toUpperCase()}`;
       deckBuilder.changeFormat(format);
+      if (format == "dl") {
+        document.getElementById("skillname").style.display = "block";
+        document.getElementById("skillInput").style.display = "block";
+      } else {
+        document.getElementById("skillname").style.display = "none";
+        document.getElementById("skillInput").style.display = "none";
+      }
       if (deckBuilder.editingDeck == "main") {
         deckBuilder.appendDeck(main, extra, cardwidth);
       } else {
@@ -481,18 +521,36 @@
       }
     }
     function saveDeck() {
-      for (let el of profile.decks) {
-        if (el.name == originalDeckName) {
-          el.name = document.getElementById("deckName").value;
-          el.yld = ygolDeck
-            .convert(deckBuilder.exportNamelist(), "yld")
-            .replace("yld://", "");
+      if (window.location.href.includes("dlf2p=true")) {
+        let skillid = 0;
+        for (let item of skillDb) {
+          if (
+            item.name == document.getElementById("skillname").innerHTML.slice(2)
+          )
+            break;
+          skillid++;
         }
+        window.open(
+          "https://dlf2p.com/deck?d=2_" +
+            ygolDeck
+              .convert(deckBuilder.exportNamelist(), "dlf2pV2")
+              .slice(0, -8) +
+            `_${skillid}_${document.getElementById("deckName").value}`
+        );
+      } else {
+        for (let el of profile.decks) {
+          if (el.name == originalDeckName) {
+            el.name = document.getElementById("deckName").value;
+            el.yld = ygolDeck
+              .convert(deckBuilder.exportNamelist(), "yld")
+              .replace("yld://", "");
+          }
+        }
+        window.open(
+          "index.html?p=" + encodeURIComponent(profile.createURL()),
+          "_self"
+        );
       }
-      window.open(
-        "index.html?p=" + encodeURIComponent(profile.createURL()),
-        "_self"
-      );
     }
     function exit() {
       window.open(
@@ -516,6 +574,21 @@
           cardwidth
         );
       }
+    }
+    if (params.get("dlf2p") == "true" && params.get("d")) {
+      document.getElementById("deckName").value = params
+        .get("d")
+        .slice(2)
+        .split("_")[2];
+      deckBuilder.importNamelist(
+        ygolDeck.convert(params.get("d"), "namelist"),
+        main,
+        extra,
+        cardwidth
+      );
+      document.getElementById("skillname").innerHTML = `✦ ${
+        skillDb[params.get("d").split("_")[1]].name
+      }`;
     }
   </script>
 </html>

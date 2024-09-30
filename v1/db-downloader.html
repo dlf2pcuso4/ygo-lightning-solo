@@ -13,10 +13,14 @@
   <body></body>
   <script src="https://dlf2p.com/lib/carddb-dl.js"></script>
   <script src="https://dlf2p.com/lib/carddb-md.js"></script>
+  <script src="https://dlf2p.com/lib/skilldb-dl.js"></script>
   <script src="cardDb (old).js"></script>
   <script src="ygolID.js"></script>
   <script src="ygolDeck.class.js"></script>
   <script>
+    //toggles
+    let downloadEntireDb = true;
+
     function download(txt, name) {
       let element = document.createElement("a");
       element.setAttribute(
@@ -150,26 +154,35 @@
       }
       download(`let ygolID = ${JSON.stringify(json)};`, "ygolID.js");
       //modified db from dlmeta
-      /*let db = [];
-      let count = 0;
-      for (let name of json) {
-        let el = jsonResponseDl.filter(
-          (a) =>
-            a.name == name.replace(" [RUSH]", "") &&
-            (name.includes(" [RUSH]") ? a.rush : !a.rush)
-        )[0];
-        console.log({ el });
-        if (el) {
-          delete el._id;
-          if (el.rush) el.name += " [RUSH]";
-          el.ygolID = count + "";
-          el.priorityDl = prioDl(el);
-          el.priorityMd = prioMd(el);
-          db.push(el);
+      if (downloadEntireDb) {
+        let db = [];
+        let count = 0;
+        for (let name of json) {
+          let el = jsonResponseDl.filter(
+            (a) =>
+              a.name == name.replace(" [RUSH]", "") &&
+              (name.includes(" [RUSH]") ? a.rush : !a.rush)
+          )[0];
+          //console.log({ el });
+          if (el) {
+            delete el._id;
+            if (el.rush) el.name += " [RUSH]";
+            el.ygolID = count + "";
+            el.priorityDl = prioDl(el);
+            el.priorityMd = prioMd(el);
+            if (
+              el.obtain.filter(
+                (a) => a.type != "sets" && a.source.name != "Special Set"
+              ).length
+            ) {
+              el.zeroGem = "true";
+            }
+            db.push(el);
+          }
+          count++;
         }
-        count++;
+        download(`let cardDb = ${JSON.stringify(db)};`, "ygolDb.js");
       }
-      download(`let cardDb = ${JSON.stringify(db)};`, "ygolDb.js");*/
       //dl banlist
       let banlistDl = [];
       for (let el of jsonResponseDl) {
@@ -215,6 +228,11 @@
       download(
         `let banlistOcg = ${JSON.stringify(banlistOcg)};`,
         "banlistOcg.js"
+      );
+      //skills
+      download(
+        `let skillDb = ${JSON.stringify(jsonResponseSkill)};`,
+        "skillDb.js"
       );
     }
     let ygolDeck = new YgolDeck(cardDb, ygolID);
