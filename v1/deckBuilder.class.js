@@ -43,10 +43,8 @@ class DeckBuilder {
   appendCards(arrNames, targetDiv, width) {
     for (let el of arrNames) {
       let altSrc = this.errorimage;
-      if (el.konamiID)
-        altSrc = `https://images.ygoprodeck.com/images/cards/${Number(
-          el.konamiID
-        )}.jpg`;
+      altSrc = el.altimg;
+      //if (el.konamiID) altSrc = `https://images.ygoprodeck.com/images/cards/${Number(el.konamiID)}.jpg`;
       targetDiv.insertAdjacentHTML(
         "beforeend",
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
@@ -123,10 +121,8 @@ class DeckBuilder {
   displayCard(name, targetDiv, width) {
     let cardObj = this.ygolDb.filter((a) => a.name == name)[0];
     let altSrc = this.errorimage;
-    if (cardObj.konamiID)
-      altSrc = `https://images.ygoprodeck.com/images/cards/${Number(
-        cardObj.konamiID
-      )}.jpg`;
+    altSrc = cardObj.altimg;
+    //if (cardObj.konamiID) altSrc = `https://images.ygoprodeck.com/images/cards/${Number(cardObj.konamiID)}.jpg`;
     targetDiv.innerHTML = "";
     targetDiv.insertAdjacentHTML(
       "beforeend",

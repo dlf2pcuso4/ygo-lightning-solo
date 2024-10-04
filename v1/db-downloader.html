@@ -165,6 +165,7 @@
           )[0];
           //console.log({ el });
           if (el) {
+            el.altimg = `https://s3.duellinksmeta.com/cards/${el._id}_w420.webp`;
             delete el._id;
             if (el.rush) el.name += " [RUSH]";
             el.ygolID = count + "";

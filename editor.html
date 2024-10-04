@@ -16,12 +16,12 @@
         align-items: center;
         font-family: "Bahnschrift";
         font-weight: lighter;
-        font-size: 25px;
+        font-size: 1.7vw;
         color: #ffffff;
       }
       #body {
         display: flex;
-        border-width: 2px;
+        border-width: max(0.14vw, 2px);
         border-color: #5e3cb3;
         border-style: solid;
       }
@@ -30,87 +30,73 @@
       }
       .purple {
         background-color: #0d071b;
-        border-width: 4px;
+        border-width: max(0.28vw, 2px);
         border-color: #5e3cb3;
         border-style: solid;
       }
       p {
-        margin-top: 15px;
+        margin-top: 2vh;
       }
       input {
-        padding: 5px;
-        font-size: 25px;
+        padding: 0.35vw;
+        font-size: 1.74vw;
         font-family: "Bahnschrift";
         font-weight: lighter;
         color: #ffffff;
         background-color: #201834;
         border: none;
-        width: 300px;
-        margin-bottom: 10px;
-      }
-      textarea {
-        padding: 5px;
-        font-size: 25px;
-        font-family: "Bahnschrift";
-        font-weight: lighter;
-        color: #ffffff;
-        background-color: #201834;
-        border: none;
-        width: 300px;
-        height: 200px;
-        margin-right: 10px;
-        margin-top: 10px;
-        resize: none;
+        width: 21vw;
+        margin-bottom: 1vh;
       }
       button {
-        width: 200px;
-        height: 50px;
+        width: 13.9vw;
+        height: 6.48vh;
         background-color: #201834;
         font-family: "Bahnschrift";
         font-weight: lighter;
-        font-size: 20px;
+        font-size: 1.4vw;
         color: #ffffff;
-        border-width: 4px;
+        border-width: max(0.28vw, 2px);
         border-color: #5e3cb3;
         border-style: solid;
         cursor: pointer;
         padding: 0px;
         outline: none;
-        margin-bottom: 10px;
+        margin-bottom: 1vh;
       }
       button:hover {
         background-color: #5e3cb3;
       }
       .minibtn {
-        width: 150px;
-        height: 40px;
-        font-size: 15px;
-        border-width: 3px;
+        width: 10.4vw;
+        height: 5.2vh;
+        font-size: 1vw;
+        border-width: max(0.2vw, 2px);
       }
       .filterbtn {
-        width: 100px;
-        height: 40px;
-        font-size: 15px;
-        border-width: 3px;
+        width: 6.9vw;
+        height: 5.2vh;
+        font-size: 1vw;
+        border-width: max(0.2vw, 2px);
       }
       #main {
-        margin-bottom: 10px;
-        padding: 10px;
-        width: 665px;
-        height: 380px;
+        margin-bottom: 1.3vh;
+        padding: 0.7vw;
+        width: 46vw;
+        height: 49vh;
         overflow-y: scroll;
       }
       #extra {
-        padding: 10px;
-        width: 665px;
-        height: 190px;
+        padding: 0.7vw;
+        width: 46vw;
+        height: 25vh;
         overflow-y: scroll;
       }
       #searchResult {
-        width: 415px;
-        height: 400px;
+        width: 29vw;
+        height: 50vh;
         overflow-y: scroll;
-        margin-bottom: 10px;
+        margin-bottom: 1.3vh;
       }
       #popupCss1 {
         width: 100vw;
@@ -131,18 +117,17 @@
         justify-content: center;
       }
       #popup {
-        width: 800px;
-        min-height: 600px;
-        max-height: 85vh;
+        width: 55.6vw;
+        height: 80vh;
         overflow: scroll;
         background-color: #000000dd;
-        padding: 20px;
+        padding: 1.4vw;
         justify-content: center;
-        font-size: 15px;
+        font-size: 1vw;
         position: relative;
       }
       .cardname {
-        font-size: 20px;
+        font-size: 1.4vw;
         text-align: center;
       }
       .skilltext {
@@ -150,8 +135,8 @@
         cursor: pointer;
       }
       .filterheader {
-        font-size: 25px;
-        margin-bottom: 10px;
+        font-size: 1.7vw;
+        margin-bottom: 0.7vw;
       }
     </style>
   </head>
@@ -208,7 +193,7 @@
           autocomplete="off"
         />
         <div id="searchResult" class="purple"></div>
-        <button onclick="testHands()">Test Hands</button>
+        <button id="testhands" onclick="testHands()">Test Hands</button>
         <button id="copyYdke" onclick="copyYdke()">Copy ydke</button><br />
         <button id="saveExit" onclick="saveDeck()">Save and Exit</button>
         <button id="exit" onclick="exit()">Exit</button>
@@ -226,6 +211,7 @@
   <script src="v1/ygolDeck.class.js"></script>
   <script src="v1/deckBuilder.class.js"></script>
   <script>
+    //1438 772
     //hold click to view card
     let cardwidth = 65;
     let main = document.getElementById("main");
@@ -253,6 +239,8 @@
     let holdThreshold = 500;
     let _isMobile = window.innerHeight > window.innerWidth;
     let editMode = "edit";
+    document.getElementById("skillname").style.display = "none";
+    document.getElementById("skillInput").style.display = "none";
 
     //mobile view
     if (_isMobile) {
@@ -275,6 +263,7 @@
           #controls{display: none;}
           #searchResult{width: 80vw; height: 62vh;}
           #popup{width: 95vw;}
+          .filterheader {font-size: 4.2vw;}
         </style>`
       );
       for (let el of document.querySelectorAll("button")) {
@@ -307,12 +296,6 @@
         editMode = "view";
         document.getElementById("switchMode").innerHTML = "Mode: View";
       }
-    }
-
-    //dlf2p.com special controls
-    if (window.location.href.includes("dlf2p=true")) {
-      document.getElementById("saveExit").innerHTML = "Create Deck";
-      document.getElementById("exit").style.display = "none";
     }
 
     document.addEventListener("mousedown", (event) => {
@@ -493,12 +476,11 @@
     }
     function testHands() {
       let namelist = deckBuilder.exportNamelist();
-      let yld = "";
+      let yld = ygolDeck.namelist_to_yld(namelist).replace("yld://", "");
       for (let el of profile.decks) {
         if (el.name == originalDeckName) {
           el.name = document.getElementById("deckName").value;
-          el.yld = ygolDeck.namelist_to_yld(namelist).replace("yld://", "");
-          yld = el.yld;
+          el.yld = yld;
         }
       }
       window.open(
@@ -574,6 +556,17 @@
           cardwidth
         );
       }
+    }
+    //dlf2p.com special controls
+    if (window.location.href.includes("dlf2p=true")) {
+      document.getElementById("saveExit").innerHTML = "Create Deck";
+      document.getElementById("exit").style.display = "none";
+      document.getElementById("testhands").style.display = "none";
+      format = "dl";
+      deckBuilder.changeFormat("dl");
+      document.getElementById("btnFormat").innerHTML = "Format: DL";
+      document.getElementById("skillname").style.display = "block";
+      document.getElementById("skillInput").style.display = "block";
     }
     if (params.get("dlf2p") == "true" && params.get("d")) {
       document.getElementById("deckName").value = params
