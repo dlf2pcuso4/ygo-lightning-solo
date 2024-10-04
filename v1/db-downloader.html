@@ -14,12 +14,13 @@
   <script src="https://dlf2p.com/lib/carddb-dl.js"></script>
   <script src="https://dlf2p.com/lib/carddb-md.js"></script>
   <script src="https://dlf2p.com/lib/skilldb-dl.js"></script>
+  <script src="https://dlf2p.com/lib/no-gem-banlist-db.js"></script>
   <script src="cardDb (old).js"></script>
   <script src="ygolID.js"></script>
   <script src="ygolDeck.class.js"></script>
   <script>
     //toggles
-    let downloadEntireDb = true;
+    let downloadEntireDb = false;
 
     function download(txt, name) {
       let element = document.createElement("a");
@@ -229,6 +230,12 @@
       download(
         `let banlistOcg = ${JSON.stringify(banlistOcg)};`,
         "banlistOcg.js"
+      );
+      //dl no gem banlist
+      download(
+        `let banlistDlzg = ${JSON.stringify(jsonNoGemBanlist)};
+        let banlistDlzgSkill = ${JSON.stringify(jsonNoGemSkillBanlist)}`,
+        "banlistDlzg.js"
       );
       //skills
       download(

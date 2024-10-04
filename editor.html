@@ -205,6 +205,7 @@
   <script src="v1/ygolID.js"></script>
   <script src="v1/skillDb.js"></script>
   <script src="v1/banlistDl.js"></script>
+  <script src="v1/banlistDlzg.js"></script>
   <script src="v1/banlistMd.js"></script>
   <script src="v1/banlistTcg.js"></script>
   <script src="v1/banlistOcg.js"></script>
@@ -221,6 +222,7 @@
     let ygolDeck = new YgolDeck(cardDb, ygolID, false);
     let deckBuilder = new DeckBuilder(cardDb);
     deckBuilder.addBanlist("dl", banlistDl);
+    deckBuilder.addBanlist("dlzg", banlistDlzg);
     deckBuilder.addBanlist("md", banlistMd);
     deckBuilder.addBanlist("tcg", banlistTcg);
     deckBuilder.addBanlist("ocg", banlistOcg);
@@ -407,10 +409,11 @@
           );
           searchResult.innerHTML = "";
           for (let item of results) {
-            searchResult.innerHTML += `<div class="skilltext" onclick="selectSkill('${item.name.replace(
-              /"/g,
-              "&quot;"
-            )}')">✦ ${item.name}</div>`;
+            if (format != "dlzg" || banlistDlzgSkill.indexOf(item.name) == -1)
+              searchResult.innerHTML += `<div class="skilltext" onclick="selectSkill('${item.name.replace(
+                /"/g,
+                "&quot;"
+              )}')">✦ ${item.name}</div>`;
           }
         }
       }, 500);
@@ -448,13 +451,13 @@
         deckBuilder.switchEditingDeck(main, extra, cardwidth);
     }
     function switchFormat() {
-      let arrFormats = ["dl", "md", "tcg", "ocg", "unlimited"];
+      let arrFormats = ["dl", "dlzg", "md", "tcg", "ocg", "unlimited"];
       format = arrFormats[(arrFormats.indexOf(format) + 1) % arrFormats.length];
       document.getElementById(
         "btnFormat"
       ).innerHTML = `Format: ${format.toUpperCase()}`;
       deckBuilder.changeFormat(format);
-      if (format == "dl") {
+      if (format.includes("dl")) {
         document.getElementById("skillname").style.display = "block";
         document.getElementById("skillInput").style.display = "block";
       } else {
@@ -469,6 +472,11 @@
       let input = document.getElementById("searchInput").value;
       if (input.length > 2 || filters.length) {
         deckBuilder.searchCard(input, searchResult, cardwidth, filters, sort);
+      } else if (
+        format.includes("dl") &&
+        document.getElementById("skillInput").value.length > 2
+      ) {
+        skillSearch();
       }
     }
     function sortDeck() {
