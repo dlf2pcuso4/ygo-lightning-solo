@@ -138,6 +138,12 @@
         font-size: 1.7vw;
         margin-bottom: 0.7vw;
       }
+      img {
+        transition: filter 0.5s ease-out;
+      }
+      .white-out {
+        filter: brightness(1000%);
+      }
     </style>
   </head>
   <body>
@@ -234,6 +240,7 @@
     let cardDivId = "";
     let mousedown = false;
     let mousehold = false;
+    let clicksInHoldThreshold = 0;
     let poppingup = false;
     let selectingFilters = false;
     let filters = [];
@@ -302,8 +309,10 @@
 
     document.addEventListener("mousedown", (event) => {
       mousedown = true;
+      clicksInHoldThreshold += 1;
       setTimeout(() => {
-        if (mousedown) mousehold = true;
+        if (mousedown && clicksInHoldThreshold == 1) mousehold = true;
+        clicksInHoldThreshold -= 1;
       }, holdThreshold);
     });
     document.addEventListener("mouseup", (event) => {
@@ -316,6 +325,14 @@
         if (editMode == "edit") {
           if (cardDivId == "searchResult") {
             deckBuilder.addCard(currentCard, main, extra, cardwidth);
+            for (let el of document.querySelectorAll("img")) {
+              if (el.alt == currentCard) {
+                el.classList.add("white-out");
+                setTimeout(() => {
+                  el.classList.remove("white-out");
+                }, 100);
+              }
+            }
           } else {
             deckBuilder.removeCard(currentCard, main, extra, cardwidth);
           }
@@ -521,11 +538,11 @@
           skillid++;
         }
         window.open(
-          "https://dlf2p.com/deck?d=2_" +
-            ygolDeck
-              .convert(deckBuilder.exportNamelist(), "dlf2pV2")
-              .slice(0, -8) +
-            `_${skillid}_${document.getElementById("deckName").value}`
+          `https://dlf2p.com/deck?d=2_${ygolDeck
+            .convert(deckBuilder.exportNamelist(), "dlf2pV2")
+            .slice(0, -8)}_${skillid}_${
+            document.getElementById("deckName").value
+          }${format == "dlzg" ? "&ng=t" : ""}`
         );
       } else {
         for (let el of profile.decks) {

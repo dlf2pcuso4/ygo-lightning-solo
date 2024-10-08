@@ -20,7 +20,14 @@
   <script src="ygolDeck.class.js"></script>
   <script>
     //toggles
-    let downloadEntireDb = false;
+    let downloadEntireDb = true;
+
+    //special cases db modification
+    //vanilla bls
+    for (let el of jsonResponseDl) {
+      if (el.description.includes("mightiest warrior"))
+        el.name = "Black Luster Soldier [Normal Monster]";
+    }
 
     function download(txt, name) {
       let element = document.createElement("a");
