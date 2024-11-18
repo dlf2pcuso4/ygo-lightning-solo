@@ -23,10 +23,18 @@
     let downloadEntireDb = true;
 
     //special cases db modification
-    //vanilla bls
     for (let el of jsonResponseDl) {
+      //vanilla bls
       if (el.description.includes("mightiest warrior"))
         el.name = "Black Luster Soldier [Normal Monster]";
+      //fleur noble knights
+      if (
+        el._id == "60c2b3aba0e24f2d54a52e60" ||
+        el._id == "60c2b3aba0e24f2d54a5265c" ||
+        el._id == "60c2b3aba0e24f2d54a52e61" ||
+        el._id == "60c2b3aaa0e24f2d54a518e7"
+      )
+        el.name += " [DL]";
     }
 
     function download(txt, name) {
@@ -181,7 +189,10 @@
             el.priorityMd = prioMd(el);
             if (
               el.obtain.filter(
-                (a) => a.type != "sets" && a.source.name != "Special Set"
+                (a) =>
+                  a.type != "sets" &&
+                  a.source.name != "Special Set" &&
+                  a.source.name != "Only Usable with Skill"
               ).length
             ) {
               el.zeroGem = "true";
