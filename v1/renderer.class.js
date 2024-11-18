@@ -180,9 +180,7 @@ class Renderer {
             360,
             525,
             {
-              altSrc: `https://images.ygoprodeck.com/images/cards/${Number(
-                card.konamiID
-              )}.jpg`,
+              altSrc: card.altimg,
               errorSrc: this.errorimage,
             }
           );
@@ -257,8 +255,8 @@ class Renderer {
     let extradeck = namelist.split("#extra")[1].split("!side")[0].split("\n");
     for (let i = 0; i < maindeck.length; i++) {
       if (maindeck[i] && maindeck[i] != "\r") {
-        let konamiID = this.ygolDeck.db.filter((a) => a.name == maindeck[i])[0]
-          .konamiID;
+        let card = this.ygolDeck.db.filter((a) => a.name == maindeck[i])[0];
+        let konamiID = card.konamiID;
         if (konamiID == "") konamiID = "error";
         await this.screen.addObjectImg(
           `main${i}`,
@@ -273,9 +271,7 @@ class Renderer {
             cardname: maindeck[i],
             list: null,
             isFaceup: false,
-            altSrc: `https://images.ygoprodeck.com/images/cards/${Number(
-              konamiID
-            )}.jpg`,
+            altSrc: card.altimg,
             errorSrc: this.errorimage,
           }
         );
@@ -283,8 +279,8 @@ class Renderer {
     }
     for (let i = 0; i < extradeck.length; i++) {
       if (extradeck[i] && extradeck[i] != "\r") {
-        let konamiID = this.ygolDeck.db.filter((a) => a.name == extradeck[i])[0]
-          .konamiID;
+        let card = this.ygolDeck.db.filter((a) => a.name == extradeck[i])[0];
+        let konamiID = card.konamiID;
         if (konamiID == "") konamiID = "error";
         await this.screen.addObjectImg(
           `extra${i}`,
@@ -299,9 +295,7 @@ class Renderer {
             cardname: extradeck[i],
             list: null,
             isFaceup: false,
-            altSrc: `https://images.ygoprodeck.com/images/cards/${Number(
-              konamiID
-            )}.jpg`,
+            altSrc: card.altimg,
             errorSrc: this.errorimage,
           }
         );
