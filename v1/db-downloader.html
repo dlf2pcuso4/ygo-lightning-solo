@@ -13,6 +13,7 @@
   <body></body>
   <script src="https://dlf2p.com/lib/carddb-dl.js"></script>
   <script src="https://dlf2p.com/lib/carddb-md.js"></script>
+  <script src="https://dlf2p.com/lib/carddb-tcgocg.js"></script>
   <script src="https://dlf2p.com/lib/skilldb-dl.js"></script>
   <script src="https://dlf2p.com/lib/no-gem-banlist-db.js"></script>
   <script src="cardDb (old).js"></script>
@@ -158,6 +159,36 @@
       prio += Number(el.ygolID);
       return prio;
     }
+    function getPopularities(target) {
+      let bestMdPop = 0;
+      for (let el of jsonResponseMd) {
+        if (el.name == target.name) {
+          if (el.popRank < bestMdPop || bestMdPop == 0) bestMdPop = el.popRank;
+        }
+      }
+      let bestTcgPop = 0;
+      let bestOcgPop = 0;
+      for (let el of jsonResponseTcgOcg) {
+        if (el.name == target.name) {
+          if (el.tcgPopRank < bestTcgPop || bestTcgPop == 0)
+            bestTcgPop = el.tcgPopRank;
+          if (el.ocgPopRank < bestOcgPop || bestOcgPop == 0)
+            bestOcgPop = el.ocgPopRank;
+        }
+      }
+      return {
+        dl: target.popRank,
+        md: bestMdPop,
+        tcg: bestTcgPop,
+        ocg: bestOcgPop,
+      };
+    }
+    function getRarities(target) {
+      for (let el of jsonResponseMd) {
+        if (el.name == target.name) return { dl: target.rarity, md: el.rarity };
+      }
+      return { dl: target.rarity, md: null };
+    }
     function updateYgolDb() {
       //some incorrectly localised card names are changed after being released in the tcg
       //those cards will clog up space in the ygolID file but shouldnt be a problem
@@ -187,6 +218,16 @@
             el.ygolID = count + "";
             el.priorityDl = prioDl(el);
             el.priorityMd = prioMd(el);
+            let pops = getPopularities(el);
+            el.popularityDl = pops.dl;
+            el.popularityMd = pops.md;
+            el.popularityTcg = pops.tcg;
+            el.popularityOcg = pops.ocg;
+            delete el.popRank;
+            let rarities = getRarities(el);
+            el.rarityDl = rarities.dl;
+            if (rarities.md) el.rarityMd = rarities.md;
+            delete el.rarity;
             if (
               el.obtain.filter(
                 (a) =>

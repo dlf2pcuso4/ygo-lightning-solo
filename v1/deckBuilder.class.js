@@ -45,13 +45,45 @@ class DeckBuilder {
       let altSrc = this.errorimage;
       altSrc = el.altimg;
       //if (el.konamiID) altSrc = `https://images.ygoprodeck.com/images/cards/${Number(el.konamiID)}.jpg`;
+      let noRarity = false;
+      if (format == "dl" || format == "dlzg") {
+        if (el.rarityDl) {
+          targetDiv.insertAdjacentHTML(
+            "beforeend",
+            `<img src="v1/dltag${el.rarityDl}.png" style="width:${
+              (width * 2) / 3
+            }px;height:${width / 6}px;margin-left:${
+              width / 3
+            }px;vertical-align: top;">`
+          );
+        } else {
+          noRarity = true;
+        }
+      }
+      if (format == "md") {
+        if (el.rarityMd) {
+          targetDiv.insertAdjacentHTML(
+            "beforeend",
+            `<img src="v1/mdtag${el.rarityMd}.png" style="width:${
+              (width * 2) / 3
+            }px;height:${width / 6}px;margin-left:${
+              width / 3
+            }px;vertical-align: top;">`
+          );
+        } else {
+          noRarity = true;
+        }
+      }
       targetDiv.insertAdjacentHTML(
         "beforeend",
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
           el.name
-        }" style="width:${width}px;" onmousedown="cardClicked(\`${
-          targetDiv.id
-        }\`,\`${
+        }" style="width:${width}px;margin:${
+          (format == "dl" || format == "dlzg" || format == "md") &&
+          noRarity == false
+            ? `${width / 6}px 0px 0px -${width}px`
+            : "0px"
+        }" onmousedown="cardClicked(\`${targetDiv.id}\`,\`${
           el.name
         }\`)" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
           this.errorimage
@@ -104,14 +136,14 @@ class DeckBuilder {
   sortDeck(mainDiv, extraDiv, width, format = "dl") {
     if (this.editingDeck == "main") {
       this.cards.sort((a, b) =>
-        format == "dl"
+        format == "dl" || format == "dlzg"
           ? b.priorityDl - a.priorityDl
           : b.priorityMd - a.priorityMd
       );
       this.appendDeck(mainDiv, extraDiv, width);
     } else {
       this.side.sort((a, b) =>
-        format == "dl"
+        format == "dl" || format == "dlzg"
           ? b.priorityDl - a.priorityDl
           : b.priorityMd - a.priorityMd
       );
@@ -179,7 +211,7 @@ class DeckBuilder {
             );
           }
         }
-      } else if (term.includes("Spell")) {
+      } else if (term.includes("Spell") && !term.includes("caster")) {
         filtered = filtered.filter((a) => a.type == "Spell");
         if (term != "Spell") {
           let spellType = term.replace(" Spell", "");
@@ -197,15 +229,32 @@ class DeckBuilder {
       } else if (term.includes("Link")) {
         let link = term.replace("Link ", "");
         filtered = filtered.filter((a) => a.linkRating == link);
-      } else if (term.toUpperCase() == term) {
-        filtered = filtered.filter((a) => a.attribute == term);
       } else if (term.includes("(DL)")) {
-        //DL
         if (term.includes("Free")) {
           filtered = filtered.filter((a) => a.zeroGem);
+        } else if (term.includes("Released")) {
+          if (term.includes("Not")) {
+            filtered = filtered.filter((a) => !a.rarityDl);
+          } else {
+            filtered = filtered.filter((a) => a.rarityDl);
+          }
+        } else {
+          filtered = filtered.filter(
+            (a) => a.rarityDl == term.replace(" (DL)", "")
+          );
         }
       } else if (term.includes("(MD)")) {
-        //MD
+        if (term.includes("Released")) {
+          if (term.includes("Not")) {
+            filtered = filtered.filter((a) => !a.rarityMd);
+          } else {
+            filtered = filtered.filter((a) => a.rarityMd);
+          }
+        } else {
+          filtered = filtered.filter(
+            (a) => a.rarityMd == term.replace(" (MD)", "")
+          );
+        }
       } else if (term == "Handtrap") {
         filtered = filtered.filter((a) => a.handtrap);
       } else if (term == "Floodgate") {
@@ -215,17 +264,42 @@ class DeckBuilder {
         showall = true;
       } else if (term == "Show All") {
         showall = true;
+      } else if (term.toUpperCase() == term) {
+        filtered = filtered.filter((a) => a.attribute == term);
       } else {
         filtered = filtered.filter((a) => a.race == term);
       }
     }
     if (!showall) filtered = filtered.filter((a) => !a.rush);
     if (sort == "Popularity") {
-      filtered.sort((a, b) => a.popRank - b.popRank);
+      if (format == "dl" || format == "dlzg")
+        filtered.sort((a, b) => a.popularityDl - b.popularityDl);
+      if (format == "md")
+        filtered.sort((a, b) => a.popularityMd - b.popularityMd);
+      if (format == "tcg")
+        filtered.sort((a, b) => a.popularityTcg - b.popularityTcg);
+      if (format == "ocg")
+        filtered.sort((a, b) => a.popularityOcg - b.popularityOcg);
     } else if (sort == "Rarity") {
-      //rarity
+      const rarityOrder = ["UR", "SR", "R", "N"];
+      if (format == "dl" || format == "dlzg")
+        filtered.sort((a, b) => {
+          if (!a.rarityDl && b.rarityDl) return 1;
+          if (a.rarityDl && !b.rarityDl) return -1;
+          return (
+            rarityOrder.indexOf(a.rarityDl) - rarityOrder.indexOf(b.rarityDl)
+          );
+        });
+      if (format == "md")
+        filtered.sort((a, b) => {
+          if (!a.rarityMd && b.rarityMd) return 1;
+          if (a.rarityMd && !b.rarityMd) return -1;
+          return (
+            rarityOrder.indexOf(a.rarityMd) - rarityOrder.indexOf(b.rarityMd)
+          );
+        });
     } else {
-      //name
+      filtered.sort((a, b) => a.name.localeCompare(b.name));
     }
     filtered.length = limit;
     this.appendCards(filtered, targetDiv, width);
