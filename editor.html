@@ -201,8 +201,9 @@
         <div id="searchResult" class="purple"></div>
         <button id="testhands" onclick="testHands()">Test Hands</button>
         <button id="copyYdke" onclick="copyYdke()">Copy ydke</button><br />
-        <button id="saveExit" onclick="saveDeck()">Save and Exit</button>
-        <button id="exit" onclick="exit()">Exit</button>
+        <button id="save" onclick="saveDeck(false)">Save</button>
+        <button id="exit" onclick="exit()">Exit</button><br />
+        <button id="saveExit" onclick="saveDeck(true)">Save and Exit</button>
       </div>
     </div>
   </body>
@@ -529,7 +530,7 @@
         }, 2000);
       }
     }
-    function saveDeck() {
+    function saveDeck(exit) {
       if (!document.getElementById("deckName").value)
         document.getElementById("deckName").value = "Untitled Deck";
       if (window.location.href.includes("dlf2p=true")) {
@@ -554,18 +555,28 @@
             )}${format == "dlzg" ? "&ng=t" : ""}`
         );
       } else {
+        yld = ygolDeck
+          .convert(deckBuilder.exportNamelist(), "yld")
+          .replace("yld://", "");
         for (let el of profile.decks) {
           if (el.name == originalDeckName) {
             el.name = document.getElementById("deckName").value;
-            el.yld = ygolDeck
-              .convert(deckBuilder.exportNamelist(), "yld")
-              .replace("yld://", "");
+            el.yld = yld;
           }
         }
-        window.open(
-          "index.html?p=" + encodeURIComponent(profile.createURL()),
-          "_self"
-        );
+        if (exit) {
+          window.open(
+            "index.html?p=" + encodeURIComponent(profile.createURL()),
+            "_self"
+          );
+        } else {
+          window.open(
+            `editor.html?yld=${yld}&p=${encodeURIComponent(
+              profile.createURL()
+            )}`,
+            "_self"
+          );
+        }
       }
     }
     function exit() {
@@ -578,6 +589,7 @@
     //dlf2p.com special controls
     if (window.location.href.includes("dlf2p=true")) {
       document.getElementById("saveExit").innerHTML = "Create Deck";
+      document.getElementById("save").style.display = "none";
       document.getElementById("exit").style.display = "none";
       document.getElementById("testhands").style.display = "none";
       format = "dl";

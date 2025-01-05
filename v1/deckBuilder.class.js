@@ -20,6 +20,20 @@ class DeckBuilder {
     fileName = fileName.replace(/\s/g, "_");
     return fileName.substring(0, 255);
   }
+  htmlEncode(str) {
+    if (str.includes("!htm!")) {
+      return str;
+    } else {
+      return "!htm!" + str.replace(/"/g, "{quot}");
+    }
+  }
+  htmlDecode(str) {
+    if (str.includes("!htm!")) {
+      return str.replace("!htm!", "").replace(/{quot}/g, '"');
+    } else {
+      return str;
+    }
+  }
   renameDeck(name) {
     this.name = name;
   }
@@ -83,9 +97,9 @@ class DeckBuilder {
           noRarity == false
             ? `${width / 6}px 0px 0px -${width}px`
             : "0px"
-        }" onmousedown="cardClicked(\`${targetDiv.id}\`,\`${
+        }" onmousedown="cardClicked(\`${targetDiv.id}\`,\`${this.htmlEncode(
           el.name
-        }\`)" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
+        )}\`)" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
           this.errorimage
         }\`;}else{this.src=\`${altSrc}\`}" >`
       );
@@ -151,7 +165,7 @@ class DeckBuilder {
     }
   }
   displayCard(name, targetDiv, width) {
-    let cardObj = this.ygolDb.filter((a) => a.name == name)[0];
+    let cardObj = this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0];
     let altSrc = this.errorimage;
     altSrc = cardObj.altimg;
     //if (cardObj.konamiID) altSrc = `https://images.ygoprodeck.com/images/cards/${Number(cardObj.konamiID)}.jpg`;
@@ -306,15 +320,19 @@ class DeckBuilder {
   }
   addCard(name, mainDiv, extraDiv, width) {
     if (
-      this.cards.filter((a) => a.name == name).length +
-        this.side.filter((a) => a.name == name).length <
+      this.cards.filter((a) => a.name == this.htmlDecode(name)).length +
+        this.side.filter((a) => a.name == this.htmlDecode(name)).length <
       3
     ) {
       if (this.editingDeck == "main") {
-        this.cards.push(this.ygolDb.filter((a) => a.name == name)[0]);
+        this.cards.push(
+          this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0]
+        );
         this.appendDeck(mainDiv, extraDiv, width);
       } else {
-        this.side.push(this.ygolDb.filter((a) => a.name == name)[0]);
+        this.side.push(
+          this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0]
+        );
         this.appendSide(mainDiv, extraDiv, width);
       }
     }
@@ -322,13 +340,17 @@ class DeckBuilder {
   removeCard(name, mainDiv, extraDiv, width) {
     if (this.editingDeck == "main") {
       this.cards.splice(
-        this.cards.indexOf(this.ygolDb.filter((a) => a.name == name)[0]),
+        this.cards.indexOf(
+          this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0]
+        ),
         1
       );
       this.appendDeck(mainDiv, extraDiv, width);
     } else {
       this.side.splice(
-        this.side.indexOf(this.ygolDb.filter((a) => a.name == name)[0]),
+        this.side.indexOf(
+          this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0]
+        ),
         1
       );
       this.appendSide(mainDiv, extraDiv, width);
