@@ -27,6 +27,9 @@ class Renderer {
     this.shuffling = false;
     this.changingLifePoints = false;
     this.movingCard = false;
+    this.playingReplay = false;
+    this.autoplay = false;
+    this.simpleUI = false;
     this.ygolDeck = new YgolDeck(cardDb, ygolID, isRush);
     this.namelist = "";
     this.yld = "";
@@ -50,6 +53,12 @@ class Renderer {
     return fileName.substring(0, 255);
   }
   async loadField() {
+    if (document.querySelector("ygol").getAttribute("autoplay"))
+      this.autoplay =
+        document.querySelector("ygol").getAttribute("autoplay") == "true";
+    if (document.querySelector("ygol").getAttribute("simple-ui"))
+      this.simpleUI =
+        document.querySelector("ygol").getAttribute("simple-ui") == "true";
     await this.screen.addObjectImg(
       "fieldbg",
       this.url("v1/fieldbg.png"),
@@ -65,14 +74,6 @@ class Renderer {
       0,
       1280,
       720
-    );
-    await this.screen.addObjectImg(
-      "menu-toggle",
-      this.url("v1/menu.png"),
-      10,
-      10,
-      80,
-      80
     );
     for (let i = 0; i < 5; i++) {
       this.screen.addObjectRect(
@@ -144,25 +145,35 @@ class Renderer {
       880,
       120
     );
-    this.screen.addObjectRect(`lp-box`, "#00000066", 10, 90, 240, 70);
-    this.screen.addObjectText("lp-txt", "#ffffff", 20, 100, 800, {
-      text: "LP:",
-      fontSize: "40pt",
-      fontFamily: "Bahnschrift",
-    });
-    this.screen.addObjectText("lp-num", "#ffffff", 100, 100, 800, {
-      text: "8000",
-      fontSize: "40pt",
-      fontFamily: "Bahnschrift",
-    });
-    await this.screen.addObjectImg(
-      "dice",
-      this.url("v1/1.png"),
-      1180,
-      30,
-      60,
-      60
-    );
+    if (!this.simpleUI) {
+      await this.screen.addObjectImg(
+        "menu-toggle",
+        this.url("v1/menu.png"),
+        10,
+        10,
+        80,
+        80
+      );
+      this.screen.addObjectRect(`lp-box`, "#00000066", 10, 90, 240, 70);
+      this.screen.addObjectText("lp-txt", "#ffffff", 20, 100, 800, {
+        text: "LP:",
+        fontSize: "40pt",
+        fontFamily: "Bahnschrift",
+      });
+      this.screen.addObjectText("lp-num", "#ffffff", 100, 100, 800, {
+        text: "8000",
+        fontSize: "40pt",
+        fontFamily: "Bahnschrift",
+      });
+      await this.screen.addObjectImg(
+        "dice",
+        this.url("v1/1.png"),
+        1180,
+        30,
+        60,
+        60
+      );
+    }
     setInterval(async () => {
       //show card info when holding down mouse
       if (this.mouseHoldingDown == "true") {
@@ -236,6 +247,25 @@ class Renderer {
             this.changeSleeve(
               document.querySelector("ygol").getAttribute("sleevesrc")
             );
+            break;
+          case "replay":
+            if (this.playingReplay) {
+              this.playingReplay = false;
+            } else {
+              this.resetField();
+              this.loadReplay(
+                document.querySelector("ygol").getAttribute("replay")
+              );
+            }
+            break;
+          case "autoplay":
+            this.autoplay =
+              document.querySelector("ygol").getAttribute("autoplay") == "true";
+            break;
+          case "simple-ui":
+            this.simpleUI =
+              document.querySelector("ygol").getAttribute("simple-ui") ==
+              "true";
             break;
           default:
             if (document.querySelector("ygol").getAttribute("yld")) {
@@ -541,7 +571,7 @@ class Renderer {
     this.isMouseDown = true;
     this.mouseHoldingDown = "pending";
     this.clicksWithinDelay += 1;
-    if (!this.movingCard) {
+    if (!this.playingReplay) {
       const rect = this.screen.canvas.getBoundingClientRect();
       this.mousedownPos = {
         x: event.clientX - rect.left,
@@ -558,7 +588,7 @@ class Renderer {
     }, this.mouseHoldDelay * 1000);
   }
   mousemove(event) {
-    if (this.isMouseDown && !this.movingCard) {
+    if (this.isMouseDown && !this.playingReplay) {
       //drag card
       const rect = this.screen.canvas.getBoundingClientRect();
       if (
@@ -593,7 +623,7 @@ class Renderer {
       this.mouseHoldingDown = "false";
     } else {
       this.mouseHoldingDown = "false";
-      if (!this.movingCard) {
+      if (!this.playingReplay) {
         const rect = this.screen.canvas.getBoundingClientRect();
         this.mouseupPos = {
           x: event.clientX - rect.left,
@@ -786,7 +816,7 @@ class Renderer {
     }
   }
   keydown(event) {
-    if (!this.isMouseDown) {
+    if (!this.isMouseDown && !this.playingReplay) {
       if (event.key == "r") {
         this.resetField();
       }
@@ -906,6 +936,9 @@ class Renderer {
               newel.y = y2;
               this.spreadHand();
               this.movingCard = false;
+            } else if (!this.playingReplay) {
+              clearInterval(interval);
+              this.movingCard = false;
             }
           }, 1000 / this.fps);
         }
@@ -915,34 +948,45 @@ class Renderer {
     }
   }
   playReplay(input) {
+    this.playingReplay = true;
     let replay = typeof input === "string" ? JSON.parse(input) : input;
     let i = -1;
     const interval = setInterval(() => {
-      if (this.movingCard == false) {
+      if (!this.movingCard) {
         this.movingCard = true;
         i++;
         if (i == replay.length) {
           clearInterval(interval);
+          if (!this.simpleUI) {
+            this.screen.addObjectRect(
+              "replay-btn-play",
+              "#00000066",
+              10,
+              170,
+              240,
+              55
+            );
+            this.screen.addObjectText(
+              "replay-txt-play",
+              "#ffffff",
+              20,
+              180,
+              1000,
+              {
+                text: "Play replay",
+                fontSize: "30pt",
+                fontFamily: "Bahnschrift",
+              }
+            );
+          }
           this.movingCard = false;
-          this.screen.addObjectRect(
-            "replay-btn-play",
-            "#00000066",
-            10,
-            170,
-            240,
-            55
-          );
-          this.screen.addObjectText(
-            "replay-txt-play",
-            "#ffffff",
-            20,
-            180,
-            1000,
-            {
-              text: "Play replay",
-              fontSize: "30pt",
-              fontFamily: "Bahnschrift",
-            }
+          this.playingReplay = false;
+        } else if (!this.playingReplay) {
+          clearInterval(interval);
+          this.movingCard = false;
+          this.resetField();
+          this.loadReplay(
+            document.querySelector("ygol").getAttribute("replay")
           );
         } else {
           setTimeout(() => {
@@ -964,26 +1008,33 @@ class Renderer {
       if (this.originalObjectList) {
         clearInterval(interval);
         this.replay = id;
-        this.screen.addObjectRect(
-          "replay-btn-play",
-          "#000000aa",
-          0,
-          0,
-          1280,
-          720
-        );
-        this.screen.addObjectText(
-          "replay-txt-play",
-          "#ffffff",
-          375,
-          280,
-          1000,
-          {
-            text: "Play replay",
-            fontSize: "80pt",
-            fontFamily: "Bahnschrift",
-          }
-        );
+        if (this.autoplay) {
+          this.resetField();
+          setTimeout(() => {
+            this.playReplayId();
+          }, 300);
+        } else {
+          this.screen.addObjectRect(
+            "replay-btn-play",
+            "#000000aa",
+            0,
+            0,
+            1280,
+            720
+          );
+          this.screen.addObjectText(
+            "replay-txt-play",
+            "#ffffff",
+            375,
+            280,
+            1000,
+            {
+              text: "Play replay",
+              fontSize: "80pt",
+              fontFamily: "Bahnschrift",
+            }
+          );
+        }
       }
     }, 100);
   }

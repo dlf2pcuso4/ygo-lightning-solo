@@ -32,6 +32,7 @@ async function main() {
   if (document.querySelector("ygol").getAttribute("replay")) {
     renderer.loadReplay(document.querySelector("ygol").getAttribute("replay"));
   }
+  //document.addEventListener("keyup", (event) => {if (event.key == "") {}});
 }
 function addCss(txt) {
   return new Promise((resolve, reject) => {
