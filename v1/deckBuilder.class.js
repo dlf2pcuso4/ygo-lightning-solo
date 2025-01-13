@@ -60,7 +60,7 @@ class DeckBuilder {
       altSrc = el.altimg;
       //if (el.konamiID) altSrc = `https://images.ygoprodeck.com/images/cards/${Number(el.konamiID)}.jpg`;
       let noRarity = false;
-      if (format == "dl" || format == "dlzg") {
+      if (this.format == "dl" || this.format == "dlzg") {
         if (el.rarityDl) {
           targetDiv.insertAdjacentHTML(
             "beforeend",
@@ -74,7 +74,7 @@ class DeckBuilder {
           noRarity = true;
         }
       }
-      if (format == "md") {
+      if (this.format == "md") {
         if (el.rarityMd) {
           targetDiv.insertAdjacentHTML(
             "beforeend",
@@ -93,7 +93,9 @@ class DeckBuilder {
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
           el.name
         }" style="width:${width}px;margin:${
-          (format == "dl" || format == "dlzg" || format == "md") &&
+          (this.format == "dl" ||
+            this.format == "dlzg" ||
+            this.format == "md") &&
           noRarity == false
             ? `${width / 6}px 0px 0px -${width}px`
             : "0px"

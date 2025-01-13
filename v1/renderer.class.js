@@ -26,11 +26,14 @@ class Renderer {
     this.originalObjectList;
     this.shuffling = false;
     this.changingLifePoints = false;
+    this.movingCard = false;
     this.ygolDeck = new YgolDeck(cardDb, ygolID, isRush);
+    this.namelist = "";
     this.yld = "";
     this.ydk = "";
     this.noimage = this.url("v1/noimage.jpg");
     this.errorimage = this.url("v1/errorimage.jpg");
+    this.replay = "";
     //debug
     this.showHitboxes = false;
     this.hitboxColor = this.showHitboxes ? "#ff000088" : "#00000000";
@@ -250,6 +253,7 @@ class Renderer {
     }
   }
   async loadDeckFromNamelist(namelist) {
+    this.namelist = namelist;
     this.deleteDeck();
     let maindeck = namelist.split("#main")[1].split("#extra")[0].split("\n");
     let extradeck = namelist.split("#extra")[1].split("!side")[0].split("\n");
@@ -537,14 +541,16 @@ class Renderer {
     this.isMouseDown = true;
     this.mouseHoldingDown = "pending";
     this.clicksWithinDelay += 1;
-    const rect = this.screen.canvas.getBoundingClientRect();
-    this.mousedownPos = {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top,
-    };
-    this.movingObject = this.screen
-      .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
-      .at(-1).id;
+    if (!this.movingCard) {
+      const rect = this.screen.canvas.getBoundingClientRect();
+      this.mousedownPos = {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+      this.movingObject = this.screen
+        .clickedObjects(this.mousedownPos.x, this.mousedownPos.y)
+        .at(-1).id;
+    }
     setTimeout(() => {
       if (this.mouseHoldingDown == "pending" && this.clicksWithinDelay == 1)
         this.mouseHoldingDown = "true";
@@ -552,7 +558,7 @@ class Renderer {
     }, this.mouseHoldDelay * 1000);
   }
   mousemove(event) {
-    if (this.isMouseDown) {
+    if (this.isMouseDown && !this.movingCard) {
       //drag card
       const rect = this.screen.canvas.getBoundingClientRect();
       if (
@@ -587,166 +593,181 @@ class Renderer {
       this.mouseHoldingDown = "false";
     } else {
       this.mouseHoldingDown = "false";
-      const rect = this.screen.canvas.getBoundingClientRect();
-      this.mouseupPos = {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top,
-      };
-      if (
-        this.mousedownPos.x != this.mouseupPos.x ||
-        this.mousedownPos.y != this.mouseupPos.y
-      ) {
-        //handle drag
-        //snap card to zone
-        let illegal = this.screen.objectList.filter(
-          (a) => a.id == this.movingObject
-        )[0].meta.isDraggable;
-        for (let clicked of this.screen.clickedObjects(
-          this.mouseupPos.x,
-          this.mouseupPos.y
-        )) {
-          if (clicked.id.includes("snapzone")) {
-            illegal = false;
-            for (let obj of this.screen.objectList) {
-              if (obj.id == this.movingObject && obj.meta.isDraggable) {
-                if (clicked.id == "snapzone-hand") {
-                  obj.y = 545;
-                  if (!obj.meta.isFaceup) this.flipCard(obj);
-                } else {
-                  obj.x = clicked.x + 30;
-                  obj.y = clicked.y;
+      if (!this.movingCard) {
+        const rect = this.screen.canvas.getBoundingClientRect();
+        this.mouseupPos = {
+          x: event.clientX - rect.left,
+          y: event.clientY - rect.top,
+        };
+        if (
+          this.mousedownPos.x != this.mouseupPos.x ||
+          this.mousedownPos.y != this.mouseupPos.y
+        ) {
+          //handle drag
+          //snap card to zone
+          let illegal = this.screen.objectList.filter(
+            (a) => a.id == this.movingObject
+          )[0].meta.isDraggable;
+          for (let clicked of this.screen.clickedObjects(
+            this.mouseupPos.x,
+            this.mouseupPos.y
+          )) {
+            if (clicked.id.includes("snapzone")) {
+              illegal = false;
+              for (let obj of this.screen.objectList) {
+                if (obj.id == this.movingObject && obj.meta.isDraggable) {
+                  if (clicked.id == "snapzone-hand") {
+                    obj.y = 545;
+                    if (!obj.meta.isFaceup) this.flipCard(obj);
+                  } else {
+                    obj.x = clicked.x + 30;
+                    obj.y = clicked.y;
+                  }
+                  if (!clicked.id.includes("snapzone-m")) obj.meta.angle = 0;
                 }
-                if (!clicked.id.includes("snapzone-m")) obj.meta.angle = 0;
               }
             }
           }
-        }
-        //return to original pos if not snapped
-        if (illegal && !this.allowIllegalPlacement) {
-          for (let obj of this.screen.objectList) {
-            if (obj.id == this.movingObject) {
-              if (this.movingObjectOgPos.isList) {
-                obj.x = 300;
-                obj.y = 545;
-              } else {
-                obj.x = this.movingObjectOgPos.x;
-                obj.y = this.movingObjectOgPos.y;
+          //return to original pos if not snapped
+          if (illegal && !this.allowIllegalPlacement) {
+            for (let obj of this.screen.objectList) {
+              if (obj.id == this.movingObject) {
+                if (this.movingObjectOgPos.isList) {
+                  obj.x = 300;
+                  obj.y = 545;
+                } else {
+                  obj.x = this.movingObjectOgPos.x;
+                  obj.y = this.movingObjectOgPos.y;
+                }
               }
             }
           }
+          this.movingObjectOgPos = null;
         }
-        this.movingObjectOgPos = null;
-      }
-      this.spreadHand();
-      if (
-        Math.abs(this.mousedownPos.x - this.mouseupPos.x) <
-          this.snapTolerance &&
-        Math.abs(this.mousedownPos.y - this.mouseupPos.y) < this.snapTolerance
-      ) {
-        //handle click
-        if (event.which == 1) {
-          let closedCardList = false;
-          //left click
-          if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id == "list-bg").length
-          ) {
-            this.closeCardList();
-            closedCardList = true;
-          }
-          if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id.includes("snapzone-m")).length
-          ) {
-            //rotate card
-            let el = this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .at(-1);
-            if (el.meta.cardname)
-              el.meta.angle = el.meta.angle == 270 ? 0 : 270;
-          }
-          if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id.includes("snapzone-p")).length &&
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.meta.cardname).length
-          ) {
-            this.openCardList();
-          }
-          if (this.screen.objectList.filter((a) => a.id == "menu-bg").length) {
-            //handle clicked menu button
+        this.spreadHand();
+        if (
+          Math.abs(this.mousedownPos.x - this.mouseupPos.x) <
+            this.snapTolerance &&
+          Math.abs(this.mousedownPos.y - this.mouseupPos.y) < this.snapTolerance
+        ) {
+          //handle click
+          if (event.which == 1) {
+            let closedCardList = false;
+            //left click
             if (
               this.screen
                 .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-                .filter((a) => a.id == "menu-btn-reset").length
+                .filter((a) => a.id == "list-bg").length
+            ) {
+              this.closeCardList();
+              closedCardList = true;
+            }
+            if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id.includes("snapzone-m")).length
+            ) {
+              //rotate card
+              let el = this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .at(-1);
+              if (el.meta.cardname)
+                el.meta.angle = el.meta.angle == 270 ? 0 : 270;
+            }
+            if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id.includes("snapzone-p")).length &&
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.meta.cardname).length
+            ) {
+              this.openCardList();
+            }
+            if (
+              this.screen.objectList.filter((a) => a.id == "menu-bg").length
+            ) {
+              //handle clicked menu button
+              if (
+                this.screen
+                  .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                  .filter((a) => a.id == "menu-btn-reset").length
+              ) {
+                this.resetField();
+              }
+              if (
+                this.screen
+                  .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                  .filter((a) => a.id == "menu-btn-import").length
+              ) {
+                let clip = await navigator.clipboard.readText();
+                if (!clip) {
+                  alert("Error: No deck in clipboard");
+                } else {
+                  try {
+                    this.loadYdk(this.ygolDeck.convert(clip, "ydk"));
+                  } catch (e) {
+                    alert("Error: Invalid deck in clipboard");
+                  }
+                }
+              }
+              this.closeMenu();
+            } else if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id == "menu-toggle").length
+            ) {
+              this.openMenu();
+            } else if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id == "lp-box").length &&
+              !closedCardList
+            ) {
+              for (let el of this.screen.objectList) {
+                if (el.id == "lp-num") {
+                  el.color = el.color == "#ffffff" ? "#33ff33" : "#ffffff";
+                  if (el.color == "#ffffff") this.changingLifePoints = false;
+                }
+              }
+            }
+            if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id == "dice").length &&
+              !closedCardList
+            ) {
+              for (let el of this.screen.objectList) {
+                if (el.id == "dice") this.rollDice();
+              }
+            }
+            //replay buttons
+            if (
+              this.screen
+                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                .filter((a) => a.id == "replay-btn-play").length
             ) {
               this.resetField();
+              setTimeout(() => {
+                this.playReplayId();
+              }, 300);
             }
+          }
+          if (event.which == 3) {
+            //right click
             if (
               this.screen
                 .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-                .filter((a) => a.id == "menu-btn-import").length
+                .filter((a) => a.id == "snapzone-pd").length
             ) {
-              let clip = await navigator.clipboard.readText();
-              if (!clip) {
-                alert("Error: No deck in clipboard");
-              } else {
-                try {
-                  this.loadYdk(this.ygolDeck.convert(clip, "ydk"));
-                } catch (e) {
-                  alert("Error: Invalid deck in clipboard");
-                }
-              }
+              this.shuffleDeck();
+            } else {
+              this.flipCard(
+                this.screen
+                  .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
+                  .at(-1)
+              );
             }
-            this.closeMenu();
-          } else if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id == "menu-toggle").length
-          ) {
-            this.openMenu();
-          } else if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id == "lp-box").length &&
-            !closedCardList
-          ) {
-            for (let el of this.screen.objectList) {
-              if (el.id == "lp-num") {
-                el.color = el.color == "#ffffff" ? "#33ff33" : "#ffffff";
-                if (el.color == "#ffffff") this.changingLifePoints = false;
-              }
-            }
-          }
-          if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id == "dice").length &&
-            !closedCardList
-          ) {
-            for (let el of this.screen.objectList) {
-              if (el.id == "dice") this.rollDice();
-            }
-          }
-        }
-        if (event.which == 3) {
-          //right click
-          if (
-            this.screen
-              .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-              .filter((a) => a.id == "snapzone-pd").length
-          ) {
-            this.shuffleDeck();
-          } else {
-            this.flipCard(
-              this.screen
-                .clickedObjects(this.mouseupPos.x, this.mouseupPos.y)
-                .at(-1)
-            );
           }
         }
       }
@@ -820,5 +841,204 @@ class Renderer {
         this.rollDice(i ? i + 1 : 1);
       }, 60);
     }
+  }
+  //replay functions
+  moveCard(
+    cardname,
+    location1,
+    location2,
+    flip = false,
+    rotate = false,
+    duration = 0
+  ) {
+    this.movingCard = true;
+    let specialZones = [
+      { zone: "hand", x: "any", y: 545 },
+      { zone: "deck", x: 1134, y: 514 },
+      { zone: "gy", x: 1134, y: 326.5 },
+      { zone: "banish", x: 1134, y: 139 },
+      { zone: "extra", x: 26, y: 514 },
+      { zone: "field", x: 26, y: 327 },
+      { zone: "m1", x: 211, y: 233 },
+      { zone: "m2", x: 395.5, y: 233 },
+      { zone: "m3", x: 580, y: 233 },
+      { zone: "m4", x: 764.5, y: 233 },
+      { zone: "m5", x: 949, y: 233 },
+      { zone: "st1", x: 211, y: 420 },
+      { zone: "st2", x: 395.5, y: 420 },
+      { zone: "st3", x: 580, y: 420 },
+      { zone: "st4", x: 764.5, y: 420 },
+      { zone: "st5", x: 949, y: 420 },
+      { zone: "emz1", x: 393, y: 26 },
+      { zone: "emz2", x: 767, y: 26 },
+    ];
+    let x1 = specialZones.filter((a) => a.zone == location1)[0].x;
+    let y1 = specialZones.filter((a) => a.zone == location1)[0].y;
+    let x2 = specialZones.filter((a) => a.zone == location2)[0].x;
+    if (x2 == "any") x2 = this.screen.width / 2;
+    let y2 = specialZones.filter((a) => a.zone == location2)[0].y;
+    if (y2 == "any") y2 = this.screen.height / 2;
+    let i = 0;
+    for (let el of this.screen.objectList) {
+      if (
+        el.meta.cardname == cardname &&
+        (el.x == x1 || x1 == "any") &&
+        (el.y == y1 || y1 == "any")
+      ) {
+        if (flip) this.flipCard(el);
+        if (rotate) el.meta.angle = el.meta.angle == 270 ? 0 : 270;
+        let [newel] = this.screen.objectList.splice(i, 1);
+        this.screen.objectList.push(newel);
+        if (duration == 0) {
+          newel.x = x2;
+          newel.y = y2;
+        } else {
+          let frames = duration * this.fps;
+          let xstep = (x2 - newel.x) / frames;
+          let ystep = (y2 - newel.y) / frames;
+          const interval = setInterval(() => {
+            newel.x += xstep;
+            newel.y += ystep;
+            frames--;
+            if (frames == 0) {
+              clearInterval(interval);
+              newel.x = x2;
+              newel.y = y2;
+              this.spreadHand();
+              this.movingCard = false;
+            }
+          }, 1000 / this.fps);
+        }
+        break;
+      }
+      i++;
+    }
+  }
+  playReplay(input) {
+    let replay = typeof input === "string" ? JSON.parse(input) : input;
+    let i = -1;
+    const interval = setInterval(() => {
+      if (this.movingCard == false) {
+        this.movingCard = true;
+        i++;
+        if (i == replay.length) {
+          clearInterval(interval);
+          this.movingCard = false;
+          this.screen.addObjectRect(
+            "replay-btn-play",
+            "#00000066",
+            10,
+            170,
+            240,
+            55
+          );
+          this.screen.addObjectText(
+            "replay-txt-play",
+            "#ffffff",
+            20,
+            180,
+            1000,
+            {
+              text: "Play replay",
+              fontSize: "30pt",
+              fontFamily: "Bahnschrift",
+            }
+          );
+        } else {
+          setTimeout(() => {
+            this.moveCard(
+              replay[i].cardname,
+              replay[i].location1,
+              replay[i].location2,
+              replay[i].flip,
+              replay[i].rotate,
+              0.25
+            );
+          }, 200);
+        }
+      }
+    }, 100);
+  }
+  loadReplay(id) {
+    let interval = setInterval(() => {
+      if (this.originalObjectList) {
+        clearInterval(interval);
+        this.replay = id;
+        this.screen.addObjectRect(
+          "replay-btn-play",
+          "#000000aa",
+          0,
+          0,
+          1280,
+          720
+        );
+        this.screen.addObjectText(
+          "replay-txt-play",
+          "#ffffff",
+          375,
+          280,
+          1000,
+          {
+            text: "Play replay",
+            fontSize: "80pt",
+            fontFamily: "Bahnschrift",
+          }
+        );
+      }
+    }, 100);
+  }
+  playReplayId(id) {
+    if (id) this.replay = id;
+    let specialZones = [
+      "hand",
+      "deck",
+      "gy",
+      "banish",
+      "extra",
+      "field",
+      "m1",
+      "m2",
+      "m3",
+      "m4",
+      "m5",
+      "st1",
+      "st2",
+      "st3",
+      "st4",
+      "st5",
+      "emz1",
+      "emz2",
+    ];
+    let noDupeNamelistArr = [];
+    let prevLine = "";
+    for (let line of this.namelist.split("\n")) {
+      if (
+        line != prevLine &&
+        line != "#main" &&
+        line != "#extra" &&
+        line != "!side" &&
+        line != ""
+      )
+        noDupeNamelistArr.push(line);
+      prevLine = line;
+    }
+    let byteString = atob(this.replay);
+    let binaryStr = [...byteString]
+      .map((char) => char.charCodeAt(0).toString(2).padStart(8, "0"))
+      .join("");
+    while (binaryStr.length % 19 !== 0 && binaryStr.length > 0)
+      binaryStr = binaryStr.slice(1);
+    let replay = [];
+    for (let action of binaryStr.match(/.{1,19}/g)) {
+      replay.push({
+        cardname: noDupeNamelistArr[parseInt(action.slice(0, 7), 2)],
+        location1: specialZones[parseInt(action.slice(7, 12), 2)],
+        location2: specialZones[parseInt(action.slice(12, 17), 2)],
+        flip: action.slice(17, 18) == "1",
+        rotate: action.slice(18, 19) == "1",
+      });
+    }
+    console.log({ replay });
+    this.playReplay(replay);
   }
 }

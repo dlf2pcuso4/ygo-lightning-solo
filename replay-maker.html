@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>YGOL Replay Maker</title>
+    <style>
+      * {
+        padding: 0;
+        margin: 0;
+      }
+      body {
+        background-color: #000000;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Bahnschrift";
+        font-weight: lighter;
+        font-size: 1.7vw;
+        color: #ffffff;
+      }
+      #body {
+        display: flex;
+        border-width: max(0.14vw, 2px);
+        border-color: #5e3cb3;
+        border-style: solid;
+      }
+      #body > div {
+        margin: 10px;
+      }
+      .purple {
+        background-color: #0d071b;
+        border-width: max(0.28vw, 2px);
+        border-color: #5e3cb3;
+        border-style: solid;
+      }
+      p {
+        margin-top: 2vh;
+      }
+      button {
+        width: 8vw;
+        height: 6.48vh;
+        background-color: #201834;
+        font-family: "Bahnschrift";
+        font-weight: lighter;
+        font-size: 1.4vw;
+        color: #ffffff;
+        border-width: max(0.28vw, 2px);
+        border-color: #5e3cb3;
+        border-style: solid;
+        cursor: pointer;
+        padding: 0px;
+        outline: none;
+        margin: 0.5vh;
+      }
+      button:hover {
+        background-color: #5e3cb3;
+      }
+      #main {
+        margin-bottom: 1.3vh;
+        padding: 0.7vw;
+        width: 36vw;
+        height: 45vh;
+        overflow-y: scroll;
+      }
+      #extra {
+        padding: 0.7vw;
+        width: 36vw;
+        height: 25vh;
+        overflow-y: scroll;
+      }
+      #location1,
+      #location2 {
+        display: flex;
+        padding: 1vw;
+      }
+      #controls button {
+        width: 11vw;
+      }
+      .selected {
+        color: #00ff00;
+      }
+      #popupCss1 {
+        width: 100vw;
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+        z-index: 9999;
+        position: fixed;
+        display: none;
+        justify-content: center;
+      }
+      #popupCss2 {
+        height: 100vh;
+        margin: 0px;
+        padding: 0px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      #popup {
+        width: 55.6vw;
+        height: 80vh;
+        overflow: scroll;
+        background-color: #000000dd;
+        padding: 1.4vw;
+        justify-content: center;
+        position: relative;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="popupCss1" onclick="hidePopup()">
+      <div id="popupCss2">
+        <div id="popup">
+          <p></p>
+        </div>
+      </div>
+    </div>
+    <div id="body">
+      <div>
+        <p id="targetCard">Target Card:</p>
+        <div id="main" class="purple"></div>
+        <div id="extra" class="purple"></div>
+      </div>
+      <div>
+        <p>Location 1:</p>
+        <div id="location1" class="purple">
+          <div>
+            <button onclick="setLocation1(this.innerHTML)">Hand</button><br />
+            <button onclick="setLocation1(this.innerHTML)">Deck</button><br />
+            <button onclick="setLocation1(this.innerHTML)">GY</button><br />
+            <button onclick="setLocation1(this.innerHTML)">Banish</button><br />
+            <button onclick="setLocation1(this.innerHTML)">Extra</button><br />
+            <button onclick="setLocation1(this.innerHTML)">Field</button><br />
+            <button onclick="setLocation1(this.innerHTML)">EMZ1</button><br />
+            <button onclick="setLocation1(this.innerHTML)">EMZ2</button><br />
+          </div>
+          <div>
+            <button onclick="setLocation1(this.innerHTML)">M1</button><br />
+            <button onclick="setLocation1(this.innerHTML)">M2</button><br />
+            <button onclick="setLocation1(this.innerHTML)">M3</button><br />
+            <button onclick="setLocation1(this.innerHTML)">M4</button><br />
+            <button onclick="setLocation1(this.innerHTML)">M5</button><br />
+            <button onclick="setLocation1(this.innerHTML)">ST1</button><br />
+            <button onclick="setLocation1(this.innerHTML)">ST2</button><br />
+            <button onclick="setLocation1(this.innerHTML)">ST3</button><br />
+            <button onclick="setLocation1(this.innerHTML)">ST4</button><br />
+            <button onclick="setLocation1(this.innerHTML)">ST5</button><br />
+          </div>
+        </div>
+      </div>
+      <div>
+        <p>Location 2:</p>
+        <div id="location2" class="purple">
+          <div>
+            <button onclick="setLocation2(this.innerHTML)">Hand</button><br />
+            <button onclick="setLocation2(this.innerHTML)">Deck</button><br />
+            <button onclick="setLocation2(this.innerHTML)">GY</button><br />
+            <button onclick="setLocation2(this.innerHTML)">Banish</button><br />
+            <button onclick="setLocation2(this.innerHTML)">Extra</button><br />
+            <button onclick="setLocation2(this.innerHTML)">Field</button><br />
+            <button onclick="setLocation2(this.innerHTML)">EMZ1</button><br />
+            <button onclick="setLocation2(this.innerHTML)">EMZ2</button><br />
+          </div>
+          <div>
+            <button onclick="setLocation2(this.innerHTML)">M1</button><br />
+            <button onclick="setLocation2(this.innerHTML)">M2</button><br />
+            <button onclick="setLocation2(this.innerHTML)">M3</button><br />
+            <button onclick="setLocation2(this.innerHTML)">M4</button><br />
+            <button onclick="setLocation2(this.innerHTML)">M5</button><br />
+            <button onclick="setLocation2(this.innerHTML)">ST1</button><br />
+            <button onclick="setLocation2(this.innerHTML)">ST2</button><br />
+            <button onclick="setLocation2(this.innerHTML)">ST3</button><br />
+            <button onclick="setLocation2(this.innerHTML)">ST4</button><br />
+            <button onclick="setLocation2(this.innerHTML)">ST5</button><br />
+          </div>
+        </div>
+      </div>
+      <div id="controls">
+        <br />
+        <button id="flip" onclick="flip()">Flip: false</button><br />
+        <button id="rotate" onclick="rotate()">Rotate: false</button
+        ><br /><br /><br />
+        <button id="addAction" onclick="addAction()">Add Action</button><br />
+        <button id="undoAction" onclick="undoAction()">Undo Action</button
+        ><br />
+        <button id="checkField" onclick="checkField()">Check Field</button
+        ><br /><br /><br />
+        <button id="exportReplay" onclick="exportReplay()">Export Replay</button
+        ><br />
+        <button id="exportReplayId" onclick="exportReplayId()">
+          Export Replay ID</button
+        ><br />
+      </div>
+    </div>
+  </body>
+  <script src="v1/ygolDb.js"></script>
+  <script src="v1/ygolID.js"></script>
+  <script src="v1/banlistTcg.js"></script>
+  <script src="v1/ygolDeck.class.js"></script>
+  <script src="v1/deckBuilder.class.js"></script>
+  <script>
+    let cardwidth = 60;
+    let main = document.getElementById("main");
+    let extra = document.getElementById("extra");
+    let ygolDeck = new YgolDeck(cardDb, ygolID, false);
+    let deckBuilder = new DeckBuilder(cardDb);
+    deckBuilder.addBanlist("tcg", banlistTcg);
+    deckBuilder.changeFormat("tcg");
+    let _isMobile = window.innerHeight > window.innerWidth;
+    let replay = [];
+    let action = {
+      cardname: "",
+      location1: "",
+      location2: "",
+      flip: false,
+      rotate: false,
+    };
+    let field = {
+      hand: [],
+      deck: [],
+      gy: [],
+      banish: [],
+      extra: [],
+      field: [],
+      m1: [],
+      m2: [],
+      m3: [],
+      m4: [],
+      m5: [],
+      st1: [],
+      st2: [],
+      st3: [],
+      st4: [],
+      st5: [],
+      emz1: [],
+      emz2: [],
+    };
+    const params = new URL(document.location).searchParams;
+    if (params.get("yld") != null) {
+      let namelist = ygolDeck.convert("yld://" + params.get("yld"), "namelist");
+      let noDupeNamelist = "";
+      let prevLine = "";
+      for (let line of namelist.split("\n")) {
+        if (line != prevLine) noDupeNamelist += line + "\n";
+        prevLine = line;
+      }
+      deckBuilder.importNamelist(noDupeNamelist, main, extra, cardwidth);
+    }
+    function cardClicked(divid, cardname) {
+      action.cardname = deckBuilder.htmlDecode(cardname);
+      document.getElementById(
+        "targetCard"
+      ).innerHTML = `Target Card: <span class="selected">${
+        action.cardname.length > 30
+          ? action.cardname.slice(0, 27) + "..."
+          : action.cardname
+      }</span>`;
+    }
+    function setLocation1(innerHTML) {
+      action.location1 = innerHTML.toLowerCase();
+      for (let el of document
+        .getElementById("location1")
+        .querySelectorAll("button")) {
+        if (el.innerHTML == innerHTML) {
+          el.classList.add("selected");
+        } else {
+          el.classList.remove("selected");
+        }
+      }
+    }
+    function setLocation2(innerHTML) {
+      action.location2 = innerHTML.toLowerCase();
+      for (let el of document
+        .getElementById("location2")
+        .querySelectorAll("button")) {
+        if (el.innerHTML == innerHTML) {
+          el.classList.add("selected");
+        } else {
+          el.classList.remove("selected");
+        }
+      }
+    }
+    function flip() {
+      action.flip = !action.flip;
+      document.getElementById(
+        "flip"
+      ).innerHTML = `Flip: <span class="selected">${action.flip}</span>`;
+    }
+    function rotate() {
+      action.rotate = !action.rotate;
+      document.getElementById(
+        "rotate"
+      ).innerHTML = `Rotate: <span class="selected">${action.rotate}</span>`;
+    }
+    function addAction() {
+      if (document.getElementById("addAction").innerHTML == "Add Action") {
+        if (
+          action.cardname == "" ||
+          action.location1 == "" ||
+          action.location2 == ""
+        ) {
+          document.getElementById("addAction").innerHTML = "Missing Info";
+        } else {
+          console.log({ action });
+          replay.push(action);
+          let index = field[action.location1].indexOf(action.cardname);
+          if (index !== -1) field[action.location1].splice(index, 1);
+          field[action.location2].push(action.cardname);
+          action = {
+            cardname: "",
+            location1: "",
+            location2: "",
+            flip: false,
+            rotate: false,
+          };
+          document.getElementById("targetCard").innerHTML = "Target Card:";
+          for (let el of document.querySelectorAll("button")) {
+            el.classList.remove("selected");
+          }
+          document.getElementById("flip").innerHTML = "Flip: false";
+          document.getElementById("rotate").innerHTML = "Rotate: false";
+          document.getElementById("addAction").innerHTML = "Added!";
+        }
+        setTimeout(() => {
+          document.getElementById("addAction").innerHTML = "Add Action";
+        }, 1000);
+      }
+    }
+    function undoAction() {
+      let popped = replay.pop();
+      let index = field[popped.location2].indexOf(popped.cardname);
+      if (index !== -1) field[popped.location2].splice(index, 1);
+      field[popped.location1].push(popped.cardname);
+      document.getElementById("undoAction").innerHTML = "Done!";
+      setTimeout(() => {
+        document.getElementById("undoAction").innerHTML = "Undo Action";
+      }, 1000);
+    }
+    function checkField() {
+      document.getElementById("popup").querySelector("p").innerHTML =
+        JSON.stringify(field)
+          .replace(/:/g, ": ")
+          .replace(/],"/g, "<br>")
+          .replace(/,/g, ", ")
+          .replace(/[{}\[\]"]/g, "");
+      document.getElementById("popupCss1").style.display = "flex";
+    }
+    function hidePopup() {
+      document.getElementById("popupCss1").style.display = "none";
+    }
+    function exportReplay() {
+      if (
+        document.getElementById("exportReplay").innerHTML == "Export Replay"
+      ) {
+        console.log(JSON.stringify(replay));
+        let input = document.createElement("textarea");
+        input.innerHTML = JSON.stringify(replay);
+        document.body.appendChild(input);
+        input.select();
+        if (document.execCommand("copy")) {
+          document.body.removeChild(input);
+          document.getElementById("exportReplay").innerHTML = "Copied!";
+          setTimeout(() => {
+            document.getElementById("exportReplay").innerHTML = "Export Replay";
+          }, 1000);
+        }
+      }
+    }
+    function bin(n, l) {
+      let binaryStr = n.toString(2);
+      return binaryStr.length >= l ? binaryStr : binaryStr.padStart(l, "0");
+    }
+    function binToB64(binaryStr) {
+      const paddedLength = Math.ceil(binaryStr.length / 8) * 8;
+      binaryStr = binaryStr.padStart(paddedLength, "0");
+      let byteArray = [];
+      for (let i = 0; i < binaryStr.length; i += 8) {
+        byteArray.push(parseInt(binaryStr.slice(i, i + 8), 2));
+      }
+      let byteString = String.fromCharCode(...byteArray);
+      return btoa(byteString);
+    }
+    function b64ToBin(base64Str) {
+      let byteString = atob(base64Str);
+      let binaryStr = [...byteString]
+        .map((char) => char.charCodeAt(0).toString(2).padStart(8, "0"))
+        .join("");
+      while (binaryStr.length % 19 !== 0 && binaryStr.length > 0)
+        binaryStr = binaryStr.slice(1);
+      return binaryStr;
+    }
+    function exportReplayId() {
+      //(first, make card name array with both main and ed with no duplicates)
+      //each move (in binary, then to 64): card name array index (128[7], all 1s for special case), location1 (32[5]), location2 (32[5]), flip (2[1]), rotate (2[1]) 19bits total
+      if (
+        document
+          .getElementById("exportReplayId")
+          .innerHTML.includes("Export Replay ID")
+      ) {
+        console.log(JSON.stringify(replay));
+        let replayid = "";
+        let specialZones = [
+          "hand",
+          "deck",
+          "gy",
+          "banish",
+          "extra",
+          "field",
+          "m1",
+          "m2",
+          "m3",
+          "m4",
+          "m5",
+          "st1",
+          "st2",
+          "st3",
+          "st4",
+          "st5",
+          "emz1",
+          "emz2",
+        ];
+        for (let el of replay) {
+          for (let i = 0; i < deckBuilder.cards.length; i++) {
+            if (deckBuilder.cards[i].name == el.cardname) {
+              replayid += `${bin(i, 7)}${bin(
+                specialZones.indexOf(el.location1),
+                5
+              )}${bin(specialZones.indexOf(el.location2), 5)}${
+                el.flip ? 1 : 0
+              }${el.rotate ? 1 : 0}`;
+              break;
+            }
+          }
+        }
+        replayid = binToB64(replayid);
+        console.log(replayid);
+        let input = document.createElement("textarea");
+        input.innerHTML = replayid;
+        document.body.appendChild(input);
+        input.select();
+        if (document.execCommand("copy")) {
+          document.body.removeChild(input);
+          document.getElementById("exportReplayId").innerHTML = "Copied!";
+          setTimeout(() => {
+            document.getElementById("exportReplayId").innerHTML =
+              "Export Replay ID";
+          }, 1000);
+        }
+      }
+    }
+  </script>
+</html>

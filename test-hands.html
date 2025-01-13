@@ -31,6 +31,8 @@
     if (dlf2pV2)
       document.querySelector("dlf2pV2").setAttribute("dlf2pV2", dlf2pV2);
     const matsrc = params.get("matsrc");
+    const replay = params.get("replay"); //replay id
+    if (replay) document.querySelector("ygol").setAttribute("replay", replay);
     if (matsrc) document.querySelector("ygol").setAttribute("matsrc", matsrc);
     const sleevesrc = params.get("sleevesrc");
     if (sleevesrc)

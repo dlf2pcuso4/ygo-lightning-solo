@@ -29,6 +29,9 @@ async function main() {
       document.querySelector("ygol").getAttribute("dlf2pV2")
     );
   }
+  if (document.querySelector("ygol").getAttribute("replay")) {
+    renderer.loadReplay(document.querySelector("ygol").getAttribute("replay"));
+  }
 }
 function addCss(txt) {
   return new Promise((resolve, reject) => {
