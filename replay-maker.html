@@ -187,6 +187,8 @@
         ><br />
         <button id="checkField" onclick="checkField()">Check Field</button
         ><br /><br /><br />
+        <button id="importReplay" onclick="importReplay()">Import Replay</button
+        ><br />
         <button id="exportReplay" onclick="exportReplay()">Export Replay</button
         ><br />
         <button id="exportReplayId" onclick="exportReplayId()">
@@ -349,6 +351,20 @@
     }
     function hidePopup() {
       document.getElementById("popupCss1").style.display = "none";
+    }
+    function importReplay() {
+      if (
+        document.getElementById("importReplay").innerHTML == "Import Replay"
+      ) {
+        let response = prompt("Enter replay array:");
+        if (response) {
+          replay = JSON.parse(response);
+          document.getElementById("importReplay").innerHTML = "Imported!";
+          setTimeout(() => {
+            document.getElementById("importReplay").innerHTML = "Import Replay";
+          }, 1000);
+        }
+      }
     }
     function exportReplay() {
       if (

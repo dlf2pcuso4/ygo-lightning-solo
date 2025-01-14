@@ -1090,6 +1090,7 @@ class Renderer {
       });
     }
     console.log({ replay });
+    console.log(JSON.stringify(replay));
     this.playReplay(replay);
   }
 }
