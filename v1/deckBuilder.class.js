@@ -324,7 +324,8 @@ class DeckBuilder {
     if (
       this.cards.filter((a) => a.name == this.htmlDecode(name)).length +
         this.side.filter((a) => a.name == this.htmlDecode(name)).length <
-      3
+        3 ||
+      window.location.href.includes("UNLIMITED_MODE=ON")
     ) {
       if (this.editingDeck == "main") {
         this.cards.push(
