@@ -54,8 +54,10 @@ class DeckBuilder {
       return `View Side Deck`;
     }
   }
-  appendCards(arrNames, targetDiv, width) {
+  appendCards(arrNames, targetDiv, width, location) {
+    let cardno = -1;
     for (let el of arrNames) {
+      cardno++;
       let altSrc = this.errorimage;
       altSrc = el.altimg;
       //if (el.konamiID) altSrc = `https://images.ygoprodeck.com/images/cards/${Number(el.konamiID)}.jpg`;
@@ -92,7 +94,7 @@ class DeckBuilder {
         "beforeend",
         `<img src="${this.url(`cards/${this.name_url(el.name)}.jpg`)}" alt="${
           el.name
-        }" style="width:${width}px;margin:${
+        }" cardno="${cardno}" location="${location}" style="width:${width}px;margin:${
           (this.format == "dl" ||
             this.format == "dlzg" ||
             this.format == "md") &&
@@ -101,9 +103,9 @@ class DeckBuilder {
             : "0px"
         }" onmousedown="cardClicked(\`${targetDiv.id}\`,\`${this.htmlEncode(
           el.name
-        )}\`)" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
+        )}\`,this)" onmouseup="cardReleased(this)" onerror="if(this.src==\`${altSrc}\`){this.onerror=null; this.src=\`${
           this.errorimage
-        }\`;}else{this.src=\`${altSrc}\`}" >`
+        }\`;}else{this.src=\`${altSrc}\`}" draggable="false">`
       );
       let banlistCard = this.banlists
         .filter((a) => a.format == this.format)[0]
@@ -125,13 +127,13 @@ class DeckBuilder {
     extraDiv.innerHTML = "";
     let main = this.cards.filter((a) => a.priorityDl < 2000000000);
     let extra = this.cards.filter((a) => a.priorityDl >= 2000000000);
-    this.appendCards(main, mainDiv, width);
-    this.appendCards(extra, extraDiv, width);
+    this.appendCards(main, mainDiv, width, "main");
+    this.appendCards(extra, extraDiv, width, "extra");
   }
   appendSide(mainDiv, extraDiv, width) {
     mainDiv.innerHTML = "";
     extraDiv.innerHTML = "";
-    this.appendCards(this.side, mainDiv, width);
+    this.appendCards(this.side, mainDiv, width, "side");
   }
   importNamelist(namelist, mainDiv, extraDiv, width) {
     for (let line of namelist.split("\n")) {
@@ -164,6 +166,36 @@ class DeckBuilder {
           : b.priorityMd - a.priorityMd
       );
       this.appendSide(mainDiv, extraDiv, width);
+    }
+  }
+  swapCards(cardno1, cardno2, location, mainDiv, extraDiv, width) {
+    let main = this.cards.filter((a) => a.priorityDl < 2000000000);
+    let extra = this.cards.filter((a) => a.priorityDl >= 2000000000);
+    let side = this.side;
+    if (location == "side") {
+      let temp = side[cardno1];
+      side.splice(cardno1, 1);
+      side.splice(cardno2, 0, temp);
+      this.side = side;
+      mainDiv.innerHTML = "";
+      extraDiv.innerHTML = "";
+      this.appendCards(side, mainDiv, width, "side");
+    } else {
+      if (location == "main") {
+        let temp = main[cardno1];
+        main.splice(cardno1, 1);
+        main.splice(cardno2, 0, temp);
+      }
+      if (location == "extra") {
+        let temp = extra[cardno1];
+        extra.splice(cardno1, 1);
+        extra.splice(cardno2, 0, temp);
+      }
+      this.cards = main.concat(extra);
+      mainDiv.innerHTML = "";
+      extraDiv.innerHTML = "";
+      this.appendCards(main, mainDiv, width, "main");
+      this.appendCards(extra, extraDiv, width, "extra");
     }
   }
   displayCard(name, targetDiv, width) {
@@ -318,7 +350,7 @@ class DeckBuilder {
       filtered.sort((a, b) => a.name.localeCompare(b.name));
     }
     filtered.length = limit;
-    this.appendCards(filtered, targetDiv, width);
+    this.appendCards(filtered, targetDiv, width, "search");
   }
   addCard(name, mainDiv, extraDiv, width) {
     if (
@@ -340,23 +372,28 @@ class DeckBuilder {
       }
     }
   }
-  removeCard(name, mainDiv, extraDiv, width) {
-    if (this.editingDeck == "main") {
-      this.cards.splice(
-        this.cards.indexOf(
-          this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0]
-        ),
-        1
-      );
-      this.appendDeck(mainDiv, extraDiv, width);
+  removeCard(cardno1, location, mainDiv, extraDiv, width) {
+    let main = this.cards.filter((a) => a.priorityDl < 2000000000);
+    let extra = this.cards.filter((a) => a.priorityDl >= 2000000000);
+    let side = this.side;
+    if (location == "side") {
+      side.splice(cardno1, 1);
+      this.side = side;
+      mainDiv.innerHTML = "";
+      extraDiv.innerHTML = "";
+      this.appendCards(side, mainDiv, width, "side");
     } else {
-      this.side.splice(
-        this.side.indexOf(
-          this.ygolDb.filter((a) => a.name == this.htmlDecode(name))[0]
-        ),
-        1
-      );
-      this.appendSide(mainDiv, extraDiv, width);
+      if (location == "main") {
+        main.splice(cardno1, 1);
+      }
+      if (location == "extra") {
+        extra.splice(cardno1, 1);
+      }
+      this.cards = main.concat(extra);
+      mainDiv.innerHTML = "";
+      extraDiv.innerHTML = "";
+      this.appendCards(main, mainDiv, width, "main");
+      this.appendCards(extra, extraDiv, width, "extra");
     }
   }
   exportNamelist() {

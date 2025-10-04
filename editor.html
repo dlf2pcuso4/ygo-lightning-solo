@@ -140,6 +140,7 @@
       }
       img {
         transition: filter 0.5s ease-out;
+        user-select: none;
       }
       .white-out {
         filter: brightness(1000%);
@@ -238,10 +239,13 @@
     deckBuilder.changeFormat(format);
     let originalDeckName = "";
     let currentCard = "";
+    let currentCardEl = null;
     let cardDivId = "";
     let mousedown = false;
     let mousehold = false;
+    let mousemove = false;
     let clicksInHoldThreshold = 0;
+    let mouseMoveTimeout;
     let poppingup = false;
     let selectingFilters = false;
     let filters = [];
@@ -312,13 +316,21 @@
       mousedown = true;
       clicksInHoldThreshold += 1;
       setTimeout(() => {
-        if (mousedown && clicksInHoldThreshold == 1) mousehold = true;
+        if (mousedown && clicksInHoldThreshold == 1 && !mousemove)
+          mousehold = true;
         clicksInHoldThreshold -= 1;
       }, holdThreshold);
     });
     document.addEventListener("mouseup", (event) => {
+      if (currentCardEl) {
+        currentCardEl.style.position = "static";
+        currentCardEl.style.pointerEvents = "auto";
+        currentCardEl.style.left = "0px";
+        currentCardEl.style.top = "0px";
+      }
       if (
         !mousehold &&
+        !mousemove &&
         (cardDivId == "main" ||
           cardDivId == "extra" ||
           cardDivId == "searchResult")
@@ -335,7 +347,13 @@
               }
             }
           } else {
-            deckBuilder.removeCard(currentCard, main, extra, cardwidth);
+            deckBuilder.removeCard(
+              currentCardEl.getAttribute("cardno"),
+              currentCardEl.getAttribute("location"),
+              main,
+              extra,
+              cardwidth
+            );
           }
         } else {
           document.getElementById("popupCss1").style.display = "flex";
@@ -353,6 +371,19 @@
       poppingup = false;
       currentCard = "";
       cardDivId = "";
+    });
+    document.addEventListener("mousemove", (event) => {
+      mousemove = true;
+      clearTimeout(mouseMoveTimeout);
+      mouseMoveTimeout = setTimeout(() => {
+        mousemove = false;
+      }, 100);
+      if (currentCardEl && mousedown) {
+        currentCardEl.style.position = "absolute";
+        currentCardEl.style.pointerEvents = "none";
+        currentCardEl.style.left = event.pageX - currentCardEl.width / 2 + "px";
+        currentCardEl.style.top = event.pageY - currentCardEl.height / 2 + "px";
+      }
     });
     document
       .getElementById("popupCss1")
@@ -398,9 +429,25 @@
         }
       }
     }
-    function cardClicked(divid, cardname) {
+    function cardClicked(divid, cardname, el) {
       currentCard = cardname;
+      currentCardEl = el;
       cardDivId = divid;
+    }
+    function cardReleased(el) {
+      if (
+        currentCardEl.getAttribute("location") == el.getAttribute("location") &&
+        el.getAttribute("location") != "search"
+      ) {
+        deckBuilder.swapCards(
+          currentCardEl.getAttribute("cardno"),
+          el.getAttribute("cardno"),
+          el.getAttribute("location"),
+          main,
+          extra,
+          cardwidth
+        );
+      }
     }
     function cardSearch() {
       let input = document.getElementById("searchInput").value;
