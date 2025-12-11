@@ -244,6 +244,7 @@
     let mousedown = false;
     let mousehold = false;
     let mousemove = false;
+    let mousemovemode = false;
     let clicksInHoldThreshold = 0;
     let mouseMoveTimeout;
     let poppingup = false;
@@ -346,7 +347,7 @@
                 }, 100);
               }
             }
-          } else {
+          } else if (!mousemovemode) {
             deckBuilder.removeCard(
               currentCardEl.getAttribute("cardno"),
               currentCardEl.getAttribute("location"),
@@ -367,6 +368,7 @@
       if (poppingup)
         document.getElementById("popupCss1").style.display = "none";
       mousedown = false;
+      mousemovemode = false;
       mousehold = false;
       poppingup = false;
       currentCard = "";
@@ -374,6 +376,7 @@
     });
     document.addEventListener("mousemove", (event) => {
       mousemove = true;
+      if (mousedown) mousemovemode = true;
       clearTimeout(mouseMoveTimeout);
       mouseMoveTimeout = setTimeout(() => {
         mousemove = false;
