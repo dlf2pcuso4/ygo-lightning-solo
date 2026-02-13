@@ -82,13 +82,13 @@
       #main {
         margin-bottom: 1.3vh;
         padding: 0.7vw;
-        width: 46vw;
+        width: 43vw;
         height: 49vh;
         overflow-y: scroll;
       }
       #extra {
         padding: 0.7vw;
-        width: 46vw;
+        width: 43vw;
         height: 25vh;
         overflow-y: scroll;
       }
@@ -222,7 +222,7 @@
   <script>
     //1438 772
     //hold click to view card
-    let cardwidth = 65;
+    let cardwidth = window.innerWidth * 0.043; //65px when vw is 14141px
     let main = document.getElementById("main");
     let extra = document.getElementById("extra");
     let searchResult = document.getElementById("searchResult");

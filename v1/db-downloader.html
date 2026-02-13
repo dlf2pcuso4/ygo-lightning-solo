@@ -228,16 +228,18 @@
             el.rarityDl = rarities.dl;
             if (rarities.md) el.rarityMd = rarities.md;
             delete el.rarity;
-            if (
-              el.obtain.filter(
-                (a) =>
-                  a.type != "sets" &&
-                  a.source.name != "Special Set" &&
-                  a.source.name != "Only Usable with Skill"
-              ).length
-            ) {
-              el.zeroGem = "true";
-            }
+            try {
+              if (
+                el.obtain.filter(
+                  (a) =>
+                    a.type != "sets" &&
+                    a.source.name != "Special Set" &&
+                    a.source.name != "Only Usable with Skill"
+                ).length
+              ) {
+                el.zeroGem = "true";
+              }
+            } catch (e) {}
             db.push(el);
           }
           count++;
